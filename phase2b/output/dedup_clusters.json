@@ -1,0 +1,274 @@
+{
+  "0": {
+    "match_key": "NEW",
+    "members": [
+      "b5c325c5-3c0f-5eee-b667-5094eaf6d942",
+      "a89e18e4-0f1f-5ba7-91f1-9714ffd93b6c"
+    ],
+    "keys": [
+      4448387642,
+      "https://in.linkedin.com/jobs/view/custom-software-engineer-at-accenture-in-india-4448387642",
+      "https://in.linkedin.com/jobs/view/custom-software-engineer-at-accenture-in-india-4448387642",
+      "979306e54f347ecb7a2a4d7e3b2b7bf89e85acb29261564014bbfa845673a5b7"
+    ],
+    "survivor": "b5c325c5-3c0f-5eee-b667-5094eaf6d942",
+    "count": 2,
+    "survivor_reason": "highest quality score 7; tie-break by job_id/url"
+  },
+  "1": {
+    "match_key": "NEW",
+    "members": [
+      "f014d236-617f-57fa-aea8-99a005bfd674",
+      "22d83c9b-d4d9-56a1-8448-66784ba2a0da"
+    ],
+    "keys": [
+      4448342711,
+      "https://in.linkedin.com/jobs/view/custom-software-engineer-at-accenture-in-india-4448342711",
+      "https://in.linkedin.com/jobs/view/custom-software-engineer-at-accenture-in-india-4448342711",
+      "055e8745d0b50e269f316796f651dc6151713a14b182e6dcb28aeb09128a1b96"
+    ],
+    "survivor": "22d83c9b-d4d9-56a1-8448-66784ba2a0da",
+    "count": 2,
+    "survivor_reason": "highest quality score 7; tie-break by job_id/url"
+  },
+  "2": {
+    "match_key": "NEW",
+    "members": [
+      "8e53efae-bbd4-5bb9-b241-92880534938f"
+    ],
+    "keys": [
+      4448354451,
+      "https://in.linkedin.com/jobs/view/software-development-engineer-at-accenture-in-india-4448354451",
+      "https://in.linkedin.com/jobs/view/software-development-engineer-at-accenture-in-india-4448354451",
+      "06dcb0c21058218eaaac1b1bcfe994f3fbf2aebdae512d71734b4701ebf2d55e"
+    ],
+    "survivor": "8e53efae-bbd4-5bb9-b241-92880534938f",
+    "count": 1,
+    "survivor_reason": "sole member"
+  },
+  "3": {
+    "match_key": "NEW",
+    "members": [
+      "4713d515-87fd-5d8a-a9a5-c02afabd9049"
+    ],
+    "keys": [
+      4448828883,
+      "https://in.linkedin.com/jobs/view/custom-software-engineer-at-accenture-in-india-4448828883",
+      "https://in.linkedin.com/jobs/view/custom-software-engineer-at-accenture-in-india-4448828883",
+      "1f87525e1f6e69295970e02749e2608ba3f9824035d6a127ae2fd935ad8a27ed"
+    ],
+    "survivor": "4713d515-87fd-5d8a-a9a5-c02afabd9049",
+    "count": 1,
+    "survivor_reason": "sole member"
+  },
+  "4": {
+    "match_key": "NEW",
+    "members": [
+      "afa6f7f5-912b-5203-b108-a982111c8010"
+    ],
+    "keys": [
+      4448362638,
+      "https://in.linkedin.com/jobs/view/custom-software-engineer-at-accenture-in-india-4448362638",
+      "https://in.linkedin.com/jobs/view/custom-software-engineer-at-accenture-in-india-4448362638",
+      "423766acb8f60e542df22b7f08b72e0f6bd8cb745b65594cd84316f04eef5b21"
+    ],
+    "survivor": "afa6f7f5-912b-5203-b108-a982111c8010",
+    "count": 1,
+    "survivor_reason": "sole member"
+  },
+  "5": {
+    "match_key": "NEW",
+    "members": [
+      "4a3433d4-fd5e-5ccd-acf4-360174adb999"
+    ],
+    "keys": [
+      4448355943,
+      "https://in.linkedin.com/jobs/view/custom-software-engineer-at-accenture-in-india-4448355943",
+      "https://in.linkedin.com/jobs/view/custom-software-engineer-at-accenture-in-india-4448355943",
+      "d8f0a0f5e3f00238e2e2fce0b0b492eecd2b992afcd5816a2dcca9ed1a70bcac"
+    ],
+    "survivor": "4a3433d4-fd5e-5ccd-acf4-360174adb999",
+    "count": 1,
+    "survivor_reason": "sole member"
+  },
+  "6": {
+    "match_key": "NEW",
+    "members": [
+      "ebde4338-7052-522b-bdce-8d5af9ed80e2"
+    ],
+    "keys": [
+      4448356209,
+      "https://in.linkedin.com/jobs/view/web-developer-at-accenture-in-india-4448356209",
+      "https://in.linkedin.com/jobs/view/web-developer-at-accenture-in-india-4448356209",
+      "ed65c18f680b10b574416b03ca7abe241b6977cfdf6196d6ff73a2f777093efb"
+    ],
+    "survivor": "ebde4338-7052-522b-bdce-8d5af9ed80e2",
+    "count": 1,
+    "survivor_reason": "sole member"
+  },
+  "7": {
+    "match_key": "NEW",
+    "members": [
+      "cd05dfda-792c-5863-bcee-d082a06d3c35"
+    ],
+    "keys": [
+      4448329746,
+      "https://in.linkedin.com/jobs/view/full-stack-engineer-at-accenture-in-india-4448329746",
+      "https://in.linkedin.com/jobs/view/full-stack-engineer-at-accenture-in-india-4448329746",
+      "ca17e6abde3e8a04b2308c17c7c0345a497b6e79d4281aaab9f66ab599be150d"
+    ],
+    "survivor": "cd05dfda-792c-5863-bcee-d082a06d3c35",
+    "count": 1,
+    "survivor_reason": "sole member"
+  },
+  "8": {
+    "match_key": "NEW",
+    "members": [
+      "6850da9b-07dc-5a79-986c-b12b2df70562"
+    ],
+    "keys": [
+      4448339314,
+      "https://in.linkedin.com/jobs/view/full-stack-engineer-at-accenture-in-india-4448339314",
+      "https://in.linkedin.com/jobs/view/full-stack-engineer-at-accenture-in-india-4448339314",
+      "329e21b67bc2748b3433ebab3a38060efe543f1c94ddf184e50671ad834f1f5d"
+    ],
+    "survivor": "6850da9b-07dc-5a79-986c-b12b2df70562",
+    "count": 1,
+    "survivor_reason": "sole member"
+  },
+  "9": {
+    "match_key": "NEW",
+    "members": [
+      "8f4ad6cf-0435-54ce-858b-a6d203402534"
+    ],
+    "keys": [
+      4448333232,
+      "https://in.linkedin.com/jobs/view/application-developer-at-accenture-in-india-4448333232",
+      "https://in.linkedin.com/jobs/view/application-developer-at-accenture-in-india-4448333232",
+      "ca0cabce08372a23e6bf60423ac2d2897bab7ef030ea616510cec277c023a2a2"
+    ],
+    "survivor": "8f4ad6cf-0435-54ce-858b-a6d203402534",
+    "count": 1,
+    "survivor_reason": "sole member"
+  },
+  "10": {
+    "match_key": "NEW",
+    "members": [
+      "30b5f1ac-88a1-5945-9378-05fbdf635306"
+    ],
+    "keys": [
+      4450004244,
+      "https://in.linkedin.com/jobs/view/senior-software-engineer-at-kaleris-4450004244",
+      "https://in.linkedin.com/jobs/view/senior-software-engineer-at-kaleris-4450004244",
+      "f332f322a2843e0117c9611c2a4013035c3394a4457b95a7e20787e7c655a23a"
+    ],
+    "survivor": "30b5f1ac-88a1-5945-9378-05fbdf635306",
+    "count": 1,
+    "survivor_reason": "sole member"
+  },
+  "11": {
+    "match_key": "NEW",
+    "members": [
+      "decae527-0e13-56d1-a63e-45bf5ca7f134"
+    ],
+    "keys": [
+      4448094541,
+      "https://in.linkedin.com/jobs/view/developer-iii-software-engineering-at-ust-4448094541",
+      "https://in.linkedin.com/jobs/view/developer-iii-software-engineering-at-ust-4448094541",
+      "d65a1cfb9a0db7e494072c450c96ccdc892b21d9d08db6e742203b8bae96c3f8"
+    ],
+    "survivor": "decae527-0e13-56d1-a63e-45bf5ca7f134",
+    "count": 1,
+    "survivor_reason": "sole member"
+  },
+  "12": {
+    "match_key": "NEW",
+    "members": [
+      "c74e9661-bc72-5d68-9f2c-47f3044e220d"
+    ],
+    "keys": [
+      4449792588,
+      "https://in.linkedin.com/jobs/view/staff-software-engineer-at-kaleris-4449792588",
+      "https://in.linkedin.com/jobs/view/staff-software-engineer-at-kaleris-4449792588",
+      "b1daf7499ed2d8126ee06073f0aeaf93d4ef306b1820a7320a765658631277e5"
+    ],
+    "survivor": "c74e9661-bc72-5d68-9f2c-47f3044e220d",
+    "count": 1,
+    "survivor_reason": "sole member"
+  },
+  "13": {
+    "match_key": "NEW",
+    "members": [
+      "ba46b9f6-ae4a-5c04-b9b4-b4e7dbfb9c49"
+    ],
+    "keys": [
+      4449395417,
+      "https://in.linkedin.com/jobs/view/software-engineer-2-at-modmed-india-4449395417",
+      "https://in.linkedin.com/jobs/view/software-engineer-2-at-modmed-india-4449395417",
+      "56ddf63d8a5a40955d9f8043b9f1982a11133b34e68bb580cd3dc761148b72e5"
+    ],
+    "survivor": "ba46b9f6-ae4a-5c04-b9b4-b4e7dbfb9c49",
+    "count": 1,
+    "survivor_reason": "sole member"
+  },
+  "14": {
+    "match_key": "NEW",
+    "members": [
+      "fdae4914-e761-5ca7-8983-67f5008dd3f0"
+    ],
+    "keys": [
+      4448894213,
+      "https://in.linkedin.com/jobs/view/custom-software-engineer-at-accenture-in-india-4448894213",
+      "https://in.linkedin.com/jobs/view/custom-software-engineer-at-accenture-in-india-4448894213",
+      "6b6b829c573bd2fd7263d171d029af573bd57aa368a300c094a71d872a9c45d8"
+    ],
+    "survivor": "fdae4914-e761-5ca7-8983-67f5008dd3f0",
+    "count": 1,
+    "survivor_reason": "sole member"
+  },
+  "15": {
+    "match_key": "NEW",
+    "members": [
+      "a1a1f6b2-ca0d-50b1-aeae-aef1435d5e64"
+    ],
+    "keys": [
+      4448351956,
+      "https://in.linkedin.com/jobs/view/custom-software-engineer-at-accenture-in-india-4448351956",
+      "https://in.linkedin.com/jobs/view/custom-software-engineer-at-accenture-in-india-4448351956",
+      "2539b1299578ffdec8b5de31ce37e293cab34bbb6c94b0c17701d10b67cecb26"
+    ],
+    "survivor": "a1a1f6b2-ca0d-50b1-aeae-aef1435d5e64",
+    "count": 1,
+    "survivor_reason": "sole member"
+  },
+  "16": {
+    "match_key": "NEW",
+    "members": [
+      "c0a29e9e-c187-58cf-9d99-fb73159a7a4c"
+    ],
+    "keys": [
+      4449153194,
+      "https://in.linkedin.com/jobs/view/engineer-innovation-at-talentien-4449153194",
+      "https://in.linkedin.com/jobs/view/engineer-innovation-at-talentien-4449153194",
+      "d46a74f29080b04dbc31233fb552c08e05d55459cd4432668a494f28a8dafe01"
+    ],
+    "survivor": "c0a29e9e-c187-58cf-9d99-fb73159a7a4c",
+    "count": 1,
+    "survivor_reason": "sole member"
+  },
+  "17": {
+    "match_key": "NEW",
+    "members": [
+      "2647e26e-03bc-59fc-9223-7616a0ea1a69"
+    ],
+    "keys": [
+      4450679704,
+      "https://in.linkedin.com/jobs/view/software-engineer-2-at-stage-2-capital-4450679704",
+      "https://in.linkedin.com/jobs/view/software-engineer-2-at-stage-2-capital-4450679704",
+      "b73a59f26f099f1947d79d8ad05b84bf0bfa6826f9ab46b3a48b54974bccedc3"
+    ],
+    "survivor": "2647e26e-03bc-59fc-9223-7616a0ea1a69",
+    "count": 1,
+    "survivor_reason": "sole member"
+  }
+}
