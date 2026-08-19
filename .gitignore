@@ -24,3 +24,6 @@ Thumbs.db
 # Local Claude session files (not project memory)
 .claude/scheduled_tasks.json
 .claude/settings.local.json
+
+# Google OAuth credentials
+client_secret_*.json
