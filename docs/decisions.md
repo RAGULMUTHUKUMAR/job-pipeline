@@ -70,32 +70,30 @@ future work as completed. Decisions are listed newest-last.
 
 ## ADR-007 — Composite scoring blocked until weights approved
 
-- **Status:** APPROVED (constraint); the weights themselves are **PROPOSED**
+- **Status:** SUPERSEDED by ADR-011 (weights now approved)
 - **Date:** 2026-08-11
 - **Decision:** Do not implement composite scoring until the weight set and the
   location/workplace policies are explicitly approved. Do **not** silently
   renormalize the current 0.80 to 1.00.
-- **Proposed weights (NOT approved):** Skills 0.30 + Experience 0.20 + Role 0.15
+- **Proposed weights (NOT approved at time):** Skills 0.30 + Experience 0.20 + Role 0.15
   - Salary 0.15 + Location 0.10 + Workplace 0.10 = 1.00. See `docs/scoring.md`.
 - **Consequences:** Composite score file, ranking, and recommendation tier are
-  all `PLANNED / NOT IMPLEMENTED`.
+  all `PLANNED / NOT IMPLEMENTED` at the time of this ADR. **Now superseded** —
+  composite scoring is implemented with 6 components and 1.00 total weight.
 
 ## ADR-008 — Location scoring: design-only, requires geographic-policy approval
 
-- **Status:** **PROPOSED** (design only; policy NOT locked)
+- **Status:** APPROVED (implemented 2026-08-18)
 - **Date:** 2026-08-11
 - **Proposal:** Score location by distinguishing: preferred geography, acceptable
   geography, remote, hybrid, onsite, unknown. Missing location/geography →
   reduced confidence, never automatic rejection.
-- **Open question:** the user has NOT approved any actual geographic preference.
-  The current dataset is entirely India (`country=IN`; cities Hyderabad,
-  Bengaluru, Chennai, Coimbatore, Trivandrum). No preferred/acceptable region is
-  assumed until the user approves it.
-- **Consequences:** `scoring/location.py` is NOT implemented.
+- **Approved geographic preference (India):** Preferred tech hubs (BENGALURU, HYDERABAD, CHENNAI, MUMBAI, PUNE, GURGAON, NOIDA, DELHI); Acceptable cities with tech presence (COIMBATORE, THIRUVANANTHAPURAM, KOCHI, KOLKATA, AHMEDABAD, VADODARA, JAIPUR, INDORE, NAGPUR, LUCKNOW, BHUBANESWAR, VISAKHAPATNAM, MYSORE). Non-India treated as UNAVAILABLE neutral.
+- **Consequences:** `phase2b/phase2c_location_score.py` IMPLEMENTED. Location weight 0.10 integrated into composite (ADR-011 updated).
 
 ## ADR-009 — Workplace scoring: design-only, unknown never rejects
 
-- **Status:** **PROPOSED** (design only; policy NOT locked)
+- **Status:** APPROVED (implemented 2026-08-18)
 - **Date:** 2026-08-11
 - **Proposal:** Score workplace separately for Remote / Hybrid / Onsite / Unknown.
   `UNKNOWN` gets a neutral score with reduced confidence — **missing workplace
@@ -105,7 +103,7 @@ future work as completed. Decisions are listed newest-last.
 - **Data note:** current dataset workplace = ONSITE 14 / UNKNOWN 6, with **no**
   remote/hybrid evidence. Remote/hybrid scoring thresholds therefore cannot be
   validated against this dataset yet.
-- **Consequences:** `scoring/workplace.py` is NOT implemented.
+- **Consequences:** `phase2b/phase2c_workplace_score.py` IMPLEMENTED. Workplace weight 0.10 integrated into composite (ADR-011 updated).
 
 ## ADR-010 — Application automation: out of scope until ranking is stable
 
@@ -120,19 +118,17 @@ future work as completed. Decisions are listed newest-last.
 
 ## ADR-011 — Phase2C Composite scoring implemented (weights + tiers approved)
 
-- **Status:** APPROVED (implemented 2026-08-11)
+- **Status:** APPROVED (implemented 2026-08-11; updated 2026-08-18 for 6 components)
 - **Date:** 2026-08-11
-- **Decision:** Implement `phase2b/phase2c_composite_score.py`, combining the four
-  frozen component scores with weights salary 0.15 / experience 0.20 / skills
-  0.30 / role 0.15. `implemented_weight = 0.80`, `reserved_weight = 0.20`
-  (reserved for future Location + Workplace). Composite score is NOT renormalized
-  to 1.00. Recommendation tiers (deterministic bands, recommendation-only):
+- **Decision:** Implement `phase2b/phase2c_composite_score.py`, combining the six
+  component scores with weights salary 0.15 / experience 0.20 / skills 0.30 /
+  role 0.15 / location 0.10 / workplace 0.10. `implemented_weight = 1.00`,
+  `reserved_weight = 0.00`. Recommendation tiers (deterministic bands, recommendation-only):
   `RECOMMEND ≥ 0.25`, `CONSIDER [0.10, 0.25)`, `MONITOR < 0.10`.
 - **Consequences:** Composite never blocks/rejects; `match_eligibility` and
   `data_quality_status` carried through unchanged; 1:1 join on `job_id`, 20 → 20
   outputs, no duplicate `job_id`; deterministic. Location (ADR-008) and Workplace
-  (ADR-009) scoring remain NOT implemented and will add their weight to the
-  reserved 0.20 when approved.
+  (ADR-009) are now implemented and included in the 1.00 total weight.
 
 ## ADR-012 — Phase2C Ranking implemented (descending composite score, ascending job_id tie-break)
 
@@ -157,7 +153,7 @@ future work as completed. Decisions are listed newest-last.
   which ranked jobs are proposed as application candidates. Approved **inclusive**
   policy: `CANDIDATE = ELIGIBLE AND recommendation_tier in {RECOMMEND, CONSIDER}`;
   `match_eligibility == REVIEW → REVIEW`; `match_eligibility == BLOCKED →
-  NOT_RECOMMENDED`. Output `phase2b/output/phase2c_application_decisions.json`.
+NOT_RECOMMENDED`. Output `phase2b/output/phase2c_application_decisions.json`.
 - **Consequences:** The output is a **proposed shortlist only** — it never
   auto-submits, emails, creates accounts, or clicks Apply; a human approval gate
   precedes any application preparation. The decision is not an eligibility filter
@@ -170,18 +166,18 @@ future work as completed. Decisions are listed newest-last.
 
 ## Decision index
 
-| ADR | Topic                                                    | Status                                       |
-| --- | -------------------------------------------------------- | -------------------------------------------- |
-| 001 | Scoring never rejects                                    | APPROVED                                     |
-| 002 | Separation of concerns                                   | APPROVED                                     |
-| 003 | `job_id` join key                                        | APPROVED                                     |
-| 004 | Dataset frozen reference set                             | APPROVED                                     |
-| 005 | Frozen-files compatibility contract                      | APPROVED                                     |
-| 006 | Incremental port target architecture                     | APPROVED                                     |
-| 007 | Composite blocked until weights approved                 | SUPERSEDED by ADR-011 (weights now approved) |
-| 008 | Location scoring design                                  | PROPOSED                                     |
-| 009 | Workplace scoring design                                 | PROPOSED                                     |
-| 010 | Application automation out of scope                      | PROPOSED                                     |
-| 011 | Composite scoring implemented (weights + tiers approved) | APPROVED                                     |
-| 012 | Ranking implemented (desc composite score, asc job_id tie-break) | APPROVED                          |
-| 013 | Application-decision layer implemented (inclusive policy) | APPROVED                          |
+| ADR | Topic                                                            | Status                                       |
+| --- | ---------------------------------------------------------------- | -------------------------------------------- |
+| 001 | Scoring never rejects                                            | APPROVED                                     |
+| 002 | Separation of concerns                                           | APPROVED                                     |
+| 003 | `job_id` join key                                                | APPROVED                                     |
+| 004 | Dataset frozen reference set                                     | APPROVED                                     |
+| 005 | Frozen-files compatibility contract                              | APPROVED                                     |
+| 006 | Incremental port target architecture                             | APPROVED                                     |
+| 007 | Composite blocked until weights approved                         | SUPERSEDED by ADR-011 (weights now approved) |
+| 008 | Location scoring design                                          | APPROVED                                     |
+| 009 | Workplace scoring design                                         | APPROVED                                     |
+| 010 | Application automation out of scope                              | PROPOSED                                     |
+| 011 | Composite scoring implemented (weights + tiers approved)         | APPROVED                                     |
+| 012 | Ranking implemented (desc composite score, asc job_id tie-break) | APPROVED                                     |
+| 013 | Application-decision layer implemented (inclusive policy)        | APPROVED                                     |

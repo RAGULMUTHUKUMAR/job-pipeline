@@ -21,29 +21,22 @@ proposing architectural changes.
    - `phase2b/phase2c_role_score.py`
    - Their `phase2b/output/*.json` (regenerate via the owning script only).
 
-2. **DO NOT implement composite scoring, location scoring, or workplace scoring**
-   until the user has approved the architecture. Their weights/policies are
-   **design-only** (see `docs/scoring.md`) and must not be silently renormalized
-   (the four locked components sum to 0.80, not 1.00).
-
-3. **DO NOT implement or run any application automation** (no submission, no
+2. **DO NOT implement or run any application automation** (no submission, no
    emails, no account creation, no Apply clicks, no browser automation).
 
-4. **Scoring dimensions rank/deprioritize only.** A score must NEVER silently
+3. **Scoring dimensions rank/deprioritize only.** A score must NEVER silently
    become an eligibility rejection. Eligibility/rejection stays separate from
    ranking.
 
-5. **Never invent missing job information** (salary, experience, skills, location,
+4. **Never invent missing job information** (salary, experience, skills, location,
    workplace). Missing → `UNAVAILABLE`/`UNCLEAR` neutral handling, per locked rules.
 
 ## Quick reference
 
-- Join key for all score files: **`job_id`** (all four = 20 records, 1:1 with
+- Join key for all score files: **`job_id`** (all six = 20 records each, 1:1 with
   `phase2b/output/job_records.json`).
 - Dataset: 20 records — ELIGIBLE 15 / REVIEW 4 / BLOCKED 1; all `country=IN`.
-- Locked component weights (hints only, NOT implemented): Salary 0.15 +
-  Experience 0.20 + Skills 0.30 + Role 0.15 = **0.80** (sums to 0.80 — review
-  before use; Location/Workplace not locked).
+- Locked component weights (implemented): Salary 0.15 + Experience 0.20 + Skills 0.30 + Role 0.15 + Location 0.10 + Workplace 0.10 = **1.00**.
 
 ## Job data model (canonical Phase 2B)
 
@@ -62,7 +55,6 @@ From `phase2b/`: `python3 <script>.py` (writes its output JSON into
 
 1. Read `PROJECT_STATE.md` and `phase2b/CLAUDE.md` first.
 2. Verify frozen files are unchanged (§5 of `PROJECT_STATE.md`).
-3. Verify the four score files still join 1:1 on `job_id` (§8).
+3. Verify the six score files still join 1:1 on `job_id` (§8).
 4. Confirm aggregate distributions still match before downstream work.
-5. Do not modify frozen files or implement composite/location/workplace/application
-   features without explicit approval.
+5. Do not modify frozen files or implement application automation features without explicit approval.

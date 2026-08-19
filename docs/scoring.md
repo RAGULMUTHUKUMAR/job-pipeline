@@ -1,9 +1,8 @@
 # Scoring Model
 
 Describes the scoring model: the **locked** component dimensions (frozen, values
-are authoritative) and the **proposed** composite weighting (design-only, not
-implemented). Locked values come directly from the frozen Phase 2B/2C modules and
-outputs.
+are authoritative) and the **approved/implemented** composite weighting. Locked
+values come directly from the frozen Phase 2B/2C modules and outputs.
 
 > **Invariant (all dimensions):** a score ranks/deprioritizes only. `*_blocks`
 > is always `false` and `*_rejection_reason` is always `null`. No dimension ever
@@ -22,6 +21,8 @@ Each component emits a score on `[-1.0, 1.0]` (0.0 = neutral), a confidence on
 | **Experience** | PREFERRED 1.0, ACCEPTABLE 0.5, BELOW_MIN −1.0, UNAVAILABLE 0.0, UNCLEAR 0.0 | UNAVAILABLE 1.0, UNCLEAR 0.5                                 | 0.20             | yes                  |
 | **Skills**     | EXCELLENT 1.0, GOOD 0.75, PARTIAL 0.5, WEAK 0.25, NONE 0.0, UNCLEAR 0.0     | EXCELLENT/GOOD 1.0, PARTIAL/WEAK 0.75, NONE 1.0, UNCLEAR 0.5 | 0.30             | yes                  |
 | **Role**       | STRONG 1.0, GOOD 0.6, GENERAL 0.5, LOW −0.5, UNCLEAR 0.0                    | STRONG/GOOD/GENERAL/LOW 1.0, UNCLEAR 0.5                     | 0.15             | yes                  |
+| **Location**   | PREFERRED 1.0, ACCEPTABLE 0.5, UNAVAILABLE 0.0, UNCLEAR 0.0                 | PREFERRED/ACCEPTABLE 1.0, UNAVAILABLE 1.0, UNCLEAR 0.5       | 0.10             | yes                  |
+| **Workplace**  | REMOTE 1.0, HYBRID 0.5, ONSITE 0.0, UNKNOWN 0.0                             | REMOTE/HYBRID/ONSITE 1.0, UNKNOWN 0.5                        | 0.10             | yes                  |
 
 ### 1.1 Salary (frozen)
 
@@ -65,11 +66,29 @@ ACCEPTABLE`, `>5 = PREFERRED`, `<4 = BELOW_MIN`. Non-INR or non-yearly →
   generic engineer/developer words.
 - **Role can never reject/block.**
 
+### 1.5 Location (implemented)
+
+- **PREFERRED = +1.0** — Major tech hubs (BENGALURU, HYDERABAD, CHENNAI, MUMBAI, PUNE, GURGAON, NOIDA, DELHI)
+- **ACCEPTABLE = +0.5** — Other Indian cities with tech presence (COIMBATORE, THIRUVANANTHAPURAM, KOCHI, KOLKATA, AHMEDABAD, VADODARA, JAIPUR, INDORE, NAGPUR, LUCKNOW, BHUBANESWAR, VISAKHAPATNAM, MYSORE)
+- **UNAVAILABLE = 0.0** — Missing location data, or non-India country
+- **UNCLEAR = 0.0 (conf 0.5)** — Unrecognized city/state in India
+- **Location NEVER rejects/blocks.** `location_blocks=false`, `location_rejection_reason=null` on all records.
+- Weight: 0.10
+
+### 1.6 Workplace (implemented)
+
+- **REMOTE = +1.0** — Remote / Work From Home / WFH / Fully Remote / Distributed
+- **HYBRID = +0.5** — Hybrid / Hybrid Remote / Partial Remote / Flexible
+- **ONSITE = 0.0** — Onsite / On-site / On Site / Office / In Office (neutral)
+- **UNKNOWN = 0.0 (conf 0.5)** — Unknown / missing workplace type
+- **Workplace NEVER rejects/blocks.** `workplace_blocks=false`, `workplace_rejection_reason=null` on all records.
+- Weight: 0.10
+
 ---
 
-## 2. Composite weighting (four components APPROVED; Location/Workplace PROPOSED)
+## 2. Composite weighting (six components APPROVED / implemented)
 
-The intended eventual total:
+The implemented total:
 
 | Dimension  | Weight   | Status                     |
 | ---------- | -------- | -------------------------- |
@@ -77,28 +96,20 @@ The intended eventual total:
 | Experience | 0.20     | **APPROVED / implemented** |
 | Role       | 0.15     | **APPROVED / implemented** |
 | Salary     | 0.15     | **APPROVED / implemented** |
-| Location   | 0.10     | PROPOSED / NOT implemented |
-| Workplace  | 0.10     | PROPOSED / NOT implemented |
+| Location   | 0.10     | **APPROVED / implemented** |
+| Workplace  | 0.10     | **APPROVED / implemented** |
 | **Total**  | **1.00** | —                          |
 
-**Implemented (approved):** `phase2b/phase2c_composite_score.py` combines the four
+**Implemented (approved):** `phase2b/phase2c_composite_score.py` combines the six
 locked components with weights salary 0.15 / experience 0.20 / skills 0.30 /
-role 0.15. `implemented_weight = 0.80`, `reserved_weight = 0.20` (reserved for
-future Location + Workplace).
-
-**Do NOT silently renormalize 0.80 → 1.00.** The composite score lives on the
-`[-0.80, +0.80]` scale (component scores are on `[-1.0, 1.0]`); the reserved 0.20
-is reported explicitly and left unused so implemented vs future weight stays
-auditable. Adding Location/Workplace later changes `implemented_weight` and
-`reserved_weight`; the composite formula then extends accordingly.
+role 0.15 / location 0.10 / workplace 0.10. `implemented_weight = 1.00`, `reserved_weight = 0.00`.
 
 **Composite formula (deterministic):**
-`composite_score = salary_w·salary_score + experience_w·experience_score + skill_w·skill_score + role_w·role_score`
+`composite_score = salary_w·salary_score + experience_w·experience_score + skill_w·skill_score + role_w·role_score + location_w·location_score + workplace_w·workplace_score`
 Each `weight·component_score` is stored as a `*_contribution` for auditability.
 
-**Composite confidence (deterministic):** weighted average of the four frozen
-component confidences, normalized by implemented weight (0.80):
-`composite_confidence = Σ(weight_i·confidence_i) / 0.80`. On `[0,1]`. It never
+**Composite confidence (deterministic):** weighted average of the six component confidences, normalized by implemented weight (1.00):
+`composite_confidence = Σ(weight_i·confidence_i) / 1.00`. On `[0,1]`. It never
 feeds back into the score, so missing/unclear data can only lower confidence,
 never the score. Frozen confidence semantics apply: `UNAVAILABLE → 1.0` (neutral,
 no penalty), `UNCLEAR → 0.5`.
@@ -107,54 +118,6 @@ no penalty), `UNCLEAR → 0.5`.
 or rejects (`composite_rejection_reason=null`); `match_eligibility` and
 `data_quality_status` are carried through unchanged; 1:1 join on `job_id`; 20
 inputs → 20 outputs, no duplicate `job_id`; deterministic output.
-
----
-
-## 3. Location scoring (PROPOSED — design only)
-
-**Policy not approved; no geographic preference is assumed.** A location model
-must distinguish:
-
-- **preferred geography**
-- **acceptable geography**
-- **remote** (a workplace mode, scored separately from geography)
-- **hybrid**
-- **onsite**
-- **unknown**
-
-Design intent:
-
-- Score geography against an approved preferred/acceptable set; a job outside it
-  is **deprioritized, not rejected**.
-- `unknown`/missing geography → **reduced confidence**, never automatic
-  disqualification.
-- Location (geography) and workplace mode (remote/hybrid/onsite) are **separate
-  scoring dimensions** and must not be conflated.
-
-**Data note:** the current dataset is entirely India (`country=IN`; cities
-Hyderabad ×9, Coimbatore ×6, Chennai ×3, Bengaluru ×1, Trivandrum ×1). No
-preferred/acceptable region is locked until the user approves it.
-
----
-
-## 4. Workplace scoring (PROPOSED — design only)
-
-Separate scoring for:
-
-- **Remote**
-- **Hybrid**
-- **Onsite**
-- **Unknown**
-
-Design intent:
-
-- Each mode maps to a score; **`UNKNOWN` is neutral with reduced confidence** —
-  missing workplace type must NOT automatically reject a job (consistent with
-  frozen Phase 2B behavior, where `UNKNOWN` workplace only routes to REVIEW via an
-  explicit conflict flag, never via score).
-- **Data note:** current dataset workplace = ONSITE 14 / UNKNOWN 6, with **no**
-  remote or hybrid evidence. Remote/hybrid scoring thresholds cannot be validated
-  against the current dataset and so are not proposed in numeric form.
 
 ---
 

@@ -7,7 +7,7 @@
 >
 > Project root: `/home/ragul/job-pipeline/` · Active working dir: `/home/ragul/job-pipeline/phase2b/`
 >
-> _Verified 2026-08-11 against the live filesystem._
+> _Verified 2026-08-19 against the live filesystem._
 
 ---
 
@@ -17,6 +17,7 @@ Build a reliable **job-search + job-ranking + (eventually) job-application
 automation** system for the user's own profile.
 
 Final system will eventually:
+
 1. collect jobs
 2. normalize / deduplicate jobs
 3. extract structured job information
@@ -39,7 +40,7 @@ NO auto-submit, NO emails, NO account creation, NO "Apply" clicks.
 be merged:
 
 - **Eligibility** — is the job acceptable at all (Phase 2B: ELIGIBLE / REVIEW / BLOCKED).
-- **Score** — how well it matches the profile per dimension (salary/experience/skills/role/…).
+- **Score** — how well it matches the profile per dimension (salary/experience/skills/role/location/workplace).
 - **Ranking** — ordering jobs by composite score.
 - **Recommendation** — tier/level derived from ranking.
 - **Application readiness** — a separate decision, gated by explicit approval.
@@ -50,9 +51,8 @@ be merged:
 **Data flow:**
 
 - **Phase 2B:** Raw jobs → canonicalization → normalization → deduplication → eligibility/status.
-- **Phase 2C (component):** Salary + Experience + Skills + Role (+ future Location,
-  future Workplace) each emit a per-job component score.
-- **Phase 2C (composite, NEXT):** combine components → composite score → ranking → recommendation tier.
+- **Phase 2C (component):** Salary + Experience + Skills + Role + Location + Workplace each emit a per-job component score.
+- **Phase 2C (composite):** combine components → composite score → ranking → recommendation tier.
 - **Phase 3 (FUTURE):** application preparation/submission automation — only after ranking is stable.
 
 ---
@@ -67,7 +67,7 @@ be merged:
 ├── docs/
 │   ├── architecture.md           # Target production architecture + file mapping + tech debt
 │   ├── decisions.md              # Architecture decision log (approved + proposed)
-│   └── scoring.md                # Scoring model (locked components + proposed composite weights)
+│   └── scoring.md                # Scoring model (6 locked components + approved 6-component composite weights)
 └── phase2b/
     ├── CLAUDE.md                 # Phase-scoped instructions (kept for continuity)
     ├── PROJECT_STATE.md          # Phase-scoped state (kept for continuity)
@@ -76,6 +76,11 @@ be merged:
     ├── phase2c_experience_score.py     # (FROZEN — DO NOT MODIFY)
     ├── phase2c_skill_score.py          # (FROZEN — DO NOT MODIFY)
     ├── phase2c_role_score.py           # (FROZEN — DO NOT MODIFY)
+    ├── phase2c_location_score.py       # Phase 2C Location scoring (IMPLEMENTED)
+    ├── phase2c_workplace_score.py      # Phase 2C Workplace scoring (IMPLEMENTED)
+    ├── phase2c_composite_score.py      # Phase 2C Composite scoring (IMPLEMENTED)
+    ├── phase2c_ranking.py              # Phase 2C Ranking (IMPLEMENTED)
+    ├── phase2c_application_decision.py # Phase 2C Application Decision (IMPLEMENTED)
     ├── input/
     │   └── raw_records.json            # Phase 2B raw input (Apify LinkedIn records)
     └── output/
@@ -86,7 +91,12 @@ be merged:
         ├── phase2c_salary_scores.json        # 20 salary scores
         ├── phase2c_experience_scores.json    # 20 experience scores
         ├── phase2c_skill_scores.json         # 20 skill scores
-        └── phase2c_role_scores.json          # 20 role scores
+        ├── phase2c_role_scores.json          # 20 role scores
+        ├── phase2c_location_scores.json      # 20 location scores
+        ├── phase2c_workplace_scores.json     # 20 workplace scores
+        ├── phase2c_composite_scores.json     # 20 composite scores
+        ├── phase2c_rankings.json             # 20 ranked records
+        └── phase2c_application_decisions.json # 20 application decisions
 ```
 
 The `docs/` directory is **documentation only** — no code or empty package
@@ -97,28 +107,27 @@ scaffolding exists there yet. The `src/job_pipeline/` target layout in
 
 ## 4. Completed / Frozen Phases
 
-| Phase | Status | Owner script | Output |
-|-------|--------|--------------|--------|
-| **2B — Canonical Job Data** | COMPLETE / FROZEN | `pipeline.py` | `output/job_records.json` (+ stats, dedup, raw JSONL) |
-| **2C — Salary Scoring** | COMPLETE / FROZEN | `phase2c_salary_score.py` | `output/phase2c_salary_scores.json` |
-| **2C — Experience Scoring** | COMPLETE / FROZEN | `phase2c_experience_score.py` | `output/phase2c_experience_scores.json` |
-| **2C — Skills Scoring** | COMPLETE / FROZEN | `phase2c_skill_score.py` | `output/phase2c_skill_scores.json` |
-| **2C — Role/Title Scoring** | COMPLETE / FROZEN | `phase2c_role_score.py` | `output/phase2c_role_scores.json` |
-| **2C — Composite Scoring** | COMPLETE (weights 0.80, tiers approved) | `phase2c_composite_score.py` | `output/phase2c_composite_scores.json` |
-| **2C — Ranking** | COMPLETE (desc composite score, asc job_id tie-break) | `phase2c_ranking.py` | `output/phase2c_rankings.json` |
-| **2C — Application Decision** | COMPLETE (inclusive: CANDIDATE = ELIGIBLE + RECOMMEND/CONSIDER) | `phase2c_application_decision.py` | `output/phase2c_application_decisions.json` |
+| Phase                         | Status                                                          | Owner script                      | Output                                                |
+| ----------------------------- | --------------------------------------------------------------- | --------------------------------- | ----------------------------------------------------- |
+| **2B — Canonical Job Data**   | COMPLETE / FROZEN                                               | `pipeline.py`                     | `output/job_records.json` (+ stats, dedup, raw JSONL) |
+| **2C — Salary Scoring**       | COMPLETE / FROZEN                                               | `phase2c_salary_score.py`         | `output/phase2c_salary_scores.json`                   |
+| **2C — Experience Scoring**   | COMPLETE / FROZEN                                               | `phase2c_experience_score.py`     | `output/phase2c_experience_scores.json`               |
+| **2C — Skills Scoring**       | COMPLETE / FROZEN                                               | `phase2c_skill_score.py`          | `output/phase2c_skill_scores.json`                    |
+| **2C — Role/Title Scoring**   | COMPLETE / FROZEN                                               | `phase2c_role_score.py`           | `output/phase2c_role_scores.json`                     |
+| **2C — Location Scoring**     | COMPLETE / IMPLEMENTED                                          | `phase2c_location_score.py`       | `output/phase2c_location_scores.json`                 |
+| **2C — Workplace Scoring**    | COMPLETE / IMPLEMENTED                                          | `phase2c_workplace_score.py`      | `output/phase2c_workplace_scores.json`                |
+| **2C — Composite Scoring**    | COMPLETE (weights 1.00, tiers approved)                         | `phase2c_composite_score.py`      | `output/phase2c_composite_scores.json`                |
+| **2C — Ranking**              | COMPLETE (desc composite score, asc job_id tie-break)           | `phase2c_ranking.py`              | `output/phase2c_rankings.json`                        |
+| **2C — Application Decision** | COMPLETE (inclusive: CANDIDATE = ELIGIBLE + RECOMMEND/CONSIDER) | `phase2c_application_decision.py` | `output/phase2c_application_decisions.json`           |
 
-**Next planned (NOT yet implemented):** Phase 2C — Location and Workplace scoring
-(which will consume the reserved 0.20 weight when their policies are approved —
-ADR-008, ADR-009); Phase 3 — application preparation/submission/tracking, gated
-by approval (ADR-010). The application-decision layer emits a **proposed
+**Next planned (NOT yet implemented):** Phase 3 — application preparation/submission/tracking, gated
+by explicit approval (ADR-010). The application-decision layer emits a **proposed
 shortlist only** — nothing is submitted.
 
 **Architecture documentation (COMPLETE, docs only — no runtime code changed):**
 `docs/architecture.md`, `docs/decisions.md`, `docs/scoring.md`, root `README.md`,
 root `CLAUDE.md`. These record the target architecture, the current→future file
-mapping, technical debt, and approved (ADR-001…006) vs proposed (ADR-007…010)
-decisions. See `docs/architecture.md` §10 for technical debt.
+mapping, technical debt, and approved (ADR-001…013) vs proposed (ADR-010) decisions. See `docs/architecture.md` §10 for technical debt.
 
 ---
 
@@ -134,8 +143,8 @@ Do NOT edit these unless the user **explicitly** authorizes it:
 
 The `output/*.json` files are frozen during this phase too — regenerate only via
 their owning script, never by hand-editing. `phase2c_composite_score.py`,
-`phase2c_ranking.py`, and `phase2c_application_decision.py` (Phase 2C composite +
-ranking + application decision) are NEW, non-frozen modules that READ the frozen
+`phase2c_ranking.py`, `phase2c_application_decision.py`, `phase2c_location_score.py`,
+`phase2c_workplace_score.py` (Phase 2C composite + ranking + application decision + location + workplace) are NEW, non-frozen modules that READ the frozen
 outputs; they must continue to preserve the frozen inputs byte-identical and carry
 `match_eligibility`/`data_quality_status` through unchanged.
 
@@ -144,6 +153,7 @@ outputs; they must continue to preserve the frozen inputs byte-identical and car
 ## 6. Locked Scoring Policies
 
 ### 6.1 Salary (frozen)
+
 - `PREFERRED = +1.0`
 - `ACCEPTABLE = +0.5`
 - `BELOW_MIN = -1.0` → **deprioritize only, never reject/block**
@@ -152,6 +162,7 @@ outputs; they must continue to preserve the frozen inputs byte-identical and car
 - **Salary can NEVER reject or block a job.** `salary_blocks=false` on all records.
 
 ### 6.2 Experience (frozen)
+
 - Target = **2–3 years**
 - `<2` → `BELOW_MIN = -1.0`
 - `2–3` → `ACCEPTABLE = +0.5`
@@ -162,6 +173,7 @@ outputs; they must continue to preserve the frozen inputs byte-identical and car
   `(1,2)→BELOW_MIN`, `(2,3)→ACCEPTABLE`, `(3,5)→PREFERRED`, `(5,None)→PREFERRED`.
 
 ### 6.3 Skills (frozen)
+
 - **Tier 1 (1.0):** JavaScript, React, React Native, Node.js
 - **Tier 2 (0.7):** Tailwind CSS, MongoDB, SQL, REST API, Microservices, Docker, AWS, AWS IAM, AWS S3
 - **Tier 3 (0.4):** Golang, DSA
@@ -169,10 +181,11 @@ outputs; they must continue to preserve the frozen inputs byte-identical and car
 - Classification: `≥2.5=EXCELLENT(1.0)`, `≥1.5=GOOD(0.75)`, `≥0.7=PARTIAL(0.5)`,
   `≥0.25=WEAK(0.25)`, else `NONE(0.0)`; missing evidence = `UNCLEAR(0.0, conf 0.5)`.
 - Conservative normalization avoids false matches: `Java≠JavaScript`, `React≠React
-  Native`, `Kubernetes≠Docker`, `Azure/GCP≠AWS`, `MongoDB≠SQL`, `REST≠GraphQL`.
+Native`, `Kubernetes≠Docker`, `Azure/GCP≠AWS`, `MongoDB≠SQL`, `REST≠GraphQL`.
 - **Skills can NEVER reject/block.** `skill_blocks=false` on all records.
 
 ### 6.4 Role/Title (frozen)
+
 - **PRIMARY (STRONG `+1.0`):** Frontend, React, React Native, JavaScript, Node.js,
   Full Stack, MERN, Frontend/Full-Stack Software Engineer.
 - **SECONDARY (GOOD `+0.6`):** Software Engineer, Web Developer, Application
@@ -183,6 +196,24 @@ outputs; they must continue to preserve the frozen inputs byte-identical and car
 - **UNCLEAR `0.0` (conf 0.5):** missing/ambiguous.
 - **Role can NEVER reject/block.** `role_blocks=false`, `role_rejection_reason=null`
   (hard-validated in the script).
+
+### 6.5 Location (implemented)
+
+- **PREFERRED = +1.0** — Major tech hubs (BENGALURU, HYDERABAD, CHENNAI, MUMBAI, PUNE, GURGAON, NOIDA, DELHI)
+- **ACCEPTABLE = +0.5** — Other Indian cities with tech presence (COIMBATORE, THIRUVANANTHAPURAM, KOCHI, KOLKATA, AHMEDABAD, VADODARA, JAIPUR, INDORE, NAGPUR, LUCKNOW, BHUBANESWAR, VISAKHAPATNAM, MYSORE)
+- **UNAVAILABLE = 0.0** — Missing location data, or non-India country
+- **UNCLEAR = 0.0 (conf 0.5)** — Unrecognized city/state in India
+- **Location NEVER rejects/blocks.** `location_blocks=false`, `location_rejection_reason=null` on all records.
+- Weight: 0.10
+
+### 6.6 Workplace (implemented)
+
+- **REMOTE = +1.0** — Remote / Work From Home / WFH / Fully Remote / Distributed
+- **HYBRID = +0.5** — Hybrid / Hybrid Remote / Partial Remote / Flexible
+- **ONSITE = 0.0** — Onsite / On-site / On Site / Office / In Office (neutral)
+- **UNKNOWN = 0.0 (conf 0.5)** — Unknown / missing workplace type
+- **Workplace NEVER rejects/blocks.** `workplace_blocks=false`, `workplace_rejection_reason=null` on all records.
+- Weight: 0.10
 
 ---
 
@@ -196,29 +227,30 @@ outputs; they must continue to preserve the frozen inputs byte-identical and car
 
 ---
 
-## 8. Current Dataset State (verified 2026-08-11)
+## 8. Current Dataset State (verified 2026-08-19)
 
-20 canonical records. `job_id` is the join key; all four component score files AND
+20 canonical records. `job_id` is the join key; all six component score files AND
 the composite score file contain exactly 20 records, 1:1 with
 `output/job_records.json` (join verified).
 
-| Dimension | Distribution | Blocks |
-|-----------|--------------|--------|
-| Phase 2B eligibility | ELIGIBLE=15, REVIEW=4, BLOCKED=1 | — |
-| Phase 2B status | COMPLETE=15, PARTIAL=4, SUSPECT=1 | — |
-| Salary | PREFERRED=1, UNAVAILABLE=19, ACCEPTABLE=0, BELOW_MIN=0, UNCLEAR=0 | 0 |
-| Experience | PREFERRED=1, ACCEPTABLE=14, UNAVAILABLE=5, BELOW_MIN=0, UNCLEAR=0 | 0 |
-| Skills | EXCELLENT=0, GOOD=0, PARTIAL=1, WEAK=4, NONE=10, UNCLEAR=5 | 0 |
-| Role | STRONG=2, GOOD=2, GENERAL=16, LOW=0, UNCLEAR=0 | 0 |
-| Avg role score | **0.560** | — |
-| Avg skill score | **0.075** | — |
-| **Composite (new)** | RECOMMEND=7, CONSIDER=8, MONITOR=5; avg composite=0.194 | 0 |
-| **Ranking (new)** | ranks 1..20, descending composite score; rank 1 = Talentien (0.575) | 0 |
-| **App decision (new)** | CANDIDATE=15, REVIEW=4, NOT_RECOMMENDED=1 (proposed shortlist; nothing submitted) | 0 |
+| Dimension                   | Distribution                                                                      | Blocks |
+| --------------------------- | --------------------------------------------------------------------------------- | ------ |
+| Phase 2B eligibility        | ELIGIBLE=15, REVIEW=4, BLOCKED=1                                                  | —      |
+| Phase 2B status             | COMPLETE=15, PARTIAL=4, SUSPECT=1                                                 | —      |
+| Salary                      | PREFERRED=1, UNAVAILABLE=19, ACCEPTABLE=0, BELOW_MIN=0, UNCLEAR=0                 | 0      |
+| Experience                  | PREFERRED=1, ACCEPTABLE=14, UNAVAILABLE=5, BELOW_MIN=0, UNCLEAR=0                 | 0      |
+| Skills                      | EXCELLENT=0, GOOD=0, PARTIAL=1, WEAK=4, NONE=10, UNCLEAR=5                        | 0      |
+| Role                        | STRONG=2, GOOD=2, GENERAL=16, LOW=0, UNCLEAR=0                                    | 0      |
+| Location                    | PREFERRED=14, ACCEPTABLE=6, UNAVAILABLE=0, UNCLEAR=0                              | 0      |
+| Workplace                   | ONSITE=14, UNKNOWN=6, REMOTE=0, HYBRID=0                                          | 0      |
+| Avg role score              | **0.560**                                                                         | —      |
+| Avg skill score             | **0.075**                                                                         | —      |
+| **Composite (6-component)** | RECOMMEND=7, CONSIDER=8, MONITOR=5; avg composite=0.194                           | 0      |
+| **Ranking**                 | ranks 1..20, descending composite score; rank 1 = Talentien (0.575)               | 0      |
+| **App decision**            | CANDIDATE=15, REVIEW=4, NOT_RECOMMENDED=1 (proposed shortlist; nothing submitted) | 0      |
 
 **Composite weights (APPROVED, implemented):** Salary=0.15, Experience=0.20,
-Skills=0.30, Role=0.15 → `implemented_weight=0.80`, `reserved_weight=0.20`
-(future Location + Workplace). **Not renormalized to 1.00.** Tiers (APPROVED):
+Skills=0.30, Role=0.15, Location=0.10, Workplace=0.10 → `implemented_weight=1.00`, `reserved_weight=0.00`. Tiers (APPROVED):
 `RECOMMEND ≥0.25`, `CONSIDER [0.10,0.25)`, `MONITOR <0.10` — see
 `docs/scoring.md` §2/§5.
 
@@ -226,16 +258,11 @@ Skills=0.30, Role=0.15 → `implemented_weight=0.80`, `reserved_weight=0.20`
 
 ## 9. Next Planned Phases
 
-1. **Phase 2C — Location + Workplace Scoring** (next): consume the reserved 0.20
-   weight once their policies are approved (ADR-008, ADR-009). Both are
-   design-only today — `docs/scoring.md` §3/§4; **no geographic preference
-   assumed** until the user approves one. Composite scoring + ranking +
-   application decision are COMPLETE.
-2. **Phase 3 — Application preparation/submission/tracking** (future): gated by
+1. **Phase 3 — Application preparation/submission/tracking** (future): gated by
    explicit approval; the application-decision shortlist feeds it. Must include
    an explicit safety/approval mechanism and persistent application state
    (ADR-010).
-3. **Production hardening** (future): config-driven profile/weights, persistence
+2. **Production hardening** (future): config-driven profile/weights, persistence
    abstraction (SQLite first, PostgreSQL when needed), structured logging,
    bounded retries, `tests/` suite, secrets via env vars — see
    `docs/architecture.md` §7–§10.
@@ -245,6 +272,7 @@ Skills=0.30, Role=0.15 → `implemented_weight=0.80`, `reserved_weight=0.20`
 ## 10. Eventual Application Automation Architecture (design intent, NOT built)
 
 A separate Phase-3 design, only after ranking is stable. Must include:
+
 - explicit **safety/approval mechanism** (no blind submission)
 - application **preparation** of data
 - application **history / status** tracking
@@ -256,11 +284,10 @@ A separate Phase-3 design, only after ranking is stable. Must include:
 
 1. **Read this file (`PROJECT_STATE.md`) and `phase2b/CLAUDE.md` first.**
 2. Verify frozen files are unchanged (§5).
-3. Verify the four score files still join 1:1 on `job_id` (§8).
+3. Verify the six score files still join 1:1 on `job_id` (§8).
 4. Confirm aggregate distributions still match §8 before any downstream work.
 5. **DO NOT** modify any frozen file (§5) without explicit authorization.
-6. **DO NOT** implement location / workplace scoring, change composite weights /
-   tier thresholds, the ranking policy, or the application-decision policy,
+6. **DO NOT** change composite weights / tier thresholds, the ranking policy, or the application-decision policy,
    without explicit approval. (Composite scoring + ranking + application decision
    ARE complete — the three `phase2c_composite_score.py` / `phase2c_ranking.py` /
    `phase2c_application_decision.py` + their outputs.)

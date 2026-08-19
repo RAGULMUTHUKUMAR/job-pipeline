@@ -33,6 +33,8 @@ phase2b/
 │   ├── phase2c_experience_scores.json    # 20 experience scores
 │   ├── phase2c_skill_scores.json         # 20 skill scores
 │   ├── phase2c_role_scores.json          # 20 role scores
+│   ├── phase2c_location_scores.json      # 20 location scores
+│   ├── phase2c_workplace_scores.json     # 20 workplace scores
 │   ├── phase2c_composite_scores.json     # 20 composite scores
 │   ├── phase2c_rankings.json             # 20 ranked records
 │   └── phase2c_application_decisions.json # 20 application decisions
@@ -41,6 +43,8 @@ phase2b/
 ├── phase2c_experience_score.py     # Phase 2C experience scoring (FROZEN — DO NOT MODIFY)
 ├── phase2c_skill_score.py          # Phase 2C skill scoring (FROZEN — DO NOT MODIFY)
 ├── phase2c_role_score.py           # Phase 2C role scoring (FROZEN — DO NOT MODIFY)
+├── phase2c_location_score.py       # Phase 2C location scoring (IMPLEMENTED)
+├── phase2c_workplace_score.py      # Phase 2C workplace scoring (IMPLEMENTED)
 ├── phase2c_composite_score.py      # Phase 2C composite scoring (IMPLEMENTED)
 ├── phase2c_ranking.py              # Phase 2C ranking (IMPLEMENTED)
 ├── phase2c_application_decision.py # Phase 2C application decision (IMPLEMENTED)
@@ -52,18 +56,20 @@ phase2b/
 
 ## 3. Completed Phases
 
-| Phase                       | Status            | What it does                                                                |
-| --------------------------- | ----------------- | --------------------------------------------------------------------------- |
-| **2B — Canonical Job Data** | COMPLETE / FROZEN | Raw → canonicalize → normalize → dedup → eligibility/status. `pipeline.py`. |
-| **2C — Salary Scoring**     | COMPLETE / FROZEN | Salary component score per record. `phase2c_salary_score.py`.               |
-| **2C — Experience Scoring** | COMPLETE / FROZEN | Experience component score per record. `phase2c_experience_score.py`.       |
-| **2C — Skills Scoring**     | COMPLETE / FROZEN | Skills component score per record. `phase2c_skill_score.py`.                |
-| **2C — Role/Title Scoring** | COMPLETE / FROZEN | Role component score per record. `phase2c_role_score.py`.                   |
-| **2C — Composite Scoring**  | COMPLETE / IMPLEMENTED | Combines 4 components (salary 0.15, exp 0.20, skills 0.30, role 0.15) into composite score + recommendation tier. `phase2c_composite_score.py`. |
-| **2C — Ranking**            | COMPLETE / IMPLEMENTED | Orders jobs by descending composite_score, ascending job_id tie-break. `phase2c_ranking.py`. |
-| **2C — Application Decision** | COMPLETE / IMPLEMENTED | Proposed shortlist: CANDIDATE = ELIGIBLE + RECOMMEND/CONSIDER. `phase2c_application_decision.py`. |
+| Phase                         | Status                 | What it does                                                                                                                                                                   |
+| ----------------------------- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **2B — Canonical Job Data**   | COMPLETE / FROZEN      | Raw → canonicalize → normalize → dedup → eligibility/status. `pipeline.py`.                                                                                                    |
+| **2C — Salary Scoring**       | COMPLETE / FROZEN      | Salary component score per record. `phase2c_salary_score.py`.                                                                                                                  |
+| **2C — Experience Scoring**   | COMPLETE / FROZEN      | Experience component score per record. `phase2c_experience_score.py`.                                                                                                          |
+| **2C — Skills Scoring**       | COMPLETE / FROZEN      | Skills component score per record. `phase2c_skill_score.py`.                                                                                                                   |
+| **2C — Role/Title Scoring**   | COMPLETE / FROZEN      | Role component score per record. `phase2c_role_score.py`.                                                                                                                      |
+| **2C — Location Scoring**     | COMPLETE / IMPLEMENTED | Location/geography component score per record. `phase2c_location_score.py`.                                                                                                    |
+| **2C — Workplace Scoring**    | COMPLETE / IMPLEMENTED | Workplace mode component score per record. `phase2c_workplace_score.py`.                                                                                                       |
+| **2C — Composite Scoring**    | COMPLETE / IMPLEMENTED | Combines 6 components (salary 0.15, exp 0.20, skills 0.30, role 0.15, location 0.10, workplace 0.10) into composite score + recommendation tier. `phase2c_composite_score.py`. |
+| **2C — Ranking**              | COMPLETE / IMPLEMENTED | Orders jobs by descending composite_score, ascending job_id tie-break. `phase2c_ranking.py`.                                                                                   |
+| **2C — Application Decision** | COMPLETE / IMPLEMENTED | Proposed shortlist: CANDIDATE = ELIGIBLE + RECOMMEND/CONSIDER. `phase2c_application_decision.py`.                                                                              |
 
-**Next planned (NOT yet implemented):** **Phase 2C — Location Scoring + Workplace Scoring** (consume reserved 0.20 weight).
+**Next planned (NOT yet implemented):** **Phase 3 — Application preparation/submission/tracking** (gated by approval, ADR-010).
 
 ---
 
@@ -122,7 +128,25 @@ phase (regenerate only via the owning script, never by hand-editing).
 - UNCLEAR `0.0` (conf 0.5): missing/ambiguous.
 - **Role can NEVER reject/block.** `role_blocks=false`, `role_rejection_reason=null` on all records (hard-validated in script).
 
-### 5.5 Universal Safety Principle
+### 5.5 Location (implemented)
+
+- **PREFERRED = +1.0** — Major tech hubs (BENGALURU, HYDERABAD, CHENNAI, MUMBAI, PUNE, GURGAON, NOIDA, DELHI)
+- **ACCEPTABLE = +0.5** — Other Indian cities with tech presence (COIMBATORE, THIRUVANANTHAPURAM, KOCHI, KOLKATA, AHMEDABAD, VADODARA, JAIPUR, INDORE, NAGPUR, LUCKNOW, BHUBANESWAR, VISAKHAPATNAM, MYSORE)
+- **UNAVAILABLE = 0.0** — Missing location data, or non-India country
+- **UNCLEAR = 0.0 (conf 0.5)** — Unrecognized city/state in India
+- **Location NEVER rejects/blocks.** `location_blocks=false`, `location_rejection_reason=null` on all records.
+- Weight: 0.10
+
+### 5.6 Workplace (implemented)
+
+- **REMOTE = +1.0** — Remote / Work From Home / WFH / Fully Remote / Distributed
+- **HYBRID = +0.5** — Hybrid / Hybrid Remote / Partial Remote / Flexible
+- **ONSITE = 0.0** — Onsite / On-site / On Site / Office / In Office (neutral)
+- **UNKNOWN = 0.0 (conf 0.5)** — Unknown / missing workplace type
+- **Workplace NEVER rejects/blocks.** `workplace_blocks=false`, `workplace_rejection_reason=null` on all records.
+- Weight: 0.10
+
+### 5.7 Universal Safety Principle
 
 > Scoring dimensions affect **ranking/deprioritization** only.
 > A score must **NOT** silently become an eligibility rejection rule.
@@ -132,7 +156,7 @@ phase (regenerate only via the owning script, never by hand-editing).
 
 ## 6. Current Dataset (20 canonical records)
 
-From `output/stats.json` and the four score files (verified 2026-08-11):
+From `output/stats.json` and the six score files (verified 2026-08-19):
 
 | Dimension            | Values                                                                      |
 | -------------------- | --------------------------------------------------------------------------- |
@@ -142,11 +166,13 @@ From `output/stats.json` and the four score files (verified 2026-08-11):
 | Experience           | PREFERRED=1, ACCEPTABLE=14, UNAVAILABLE=5, BELOW_MIN=0, UNCLEAR=0; blocks=0 |
 | Skills               | EXCELLENT=0, GOOD=0, PARTIAL=1, WEAK=4, NONE=10, UNCLEAR=5; blocks=0        |
 | Role                 | STRONG=2, GOOD=2, GENERAL=16, LOW=0, UNCLEAR=0; blocks=0                    |
+| Location             | PREFERRED=14, ACCEPTABLE=6, UNAVAILABLE=0, UNCLEAR=0; blocks=0              |
+| Workplace            | ONSITE=14, UNKNOWN=6, REMOTE=0, HYBRID=0; blocks=0                          |
 | Avg role score       | 0.560                                                                       |
 | Avg skill score      | 0.075                                                                       |
 
-**Weight hints (documented only, NOT yet implemented, must be reviewed):**
-Salary=0.15, Experience=0.20, Skills=0.30, Role=0.15 → **sums to 0.80.**
+**Weight hints (documented only, NOW IMPLEMENTED):**
+Salary=0.15, Experience=0.20, Skills=0.30, Role=0.15, Location=0.10, Workplace=0.10 → **sums to 1.00.**
 
 ---
 
@@ -158,8 +184,10 @@ Salary=0.15, Experience=0.20, Skills=0.30, Role=0.15 → **sums to 0.80.**
 | Experience | `phase2c_experience_score.py` | `output/phase2c_experience_scores.json` | `job_id`, `experience_interpretation`, `experience_score`, `experience_confidence`, `experience_weight`, `experience_blocks`, ... |
 | Skills     | `phase2c_skill_score.py`      | `output/phase2c_skill_scores.json`      | `job_id`, `skill_fit`, `skill_score`, `skill_confidence`, `skill_weight`, `skill_blocks`, ...                                     |
 | Role       | `phase2c_role_score.py`       | `output/phase2c_role_scores.json`       | `job_id`, `role_fit`, `role_score`, `role_confidence`, `role_weight`, `role_blocks`, ...                                          |
+| Location   | `phase2c_location_score.py`   | `output/phase2c_location_scores.json`   | `job_id`, `location_interpretation`, `location_score`, `location_confidence`, `location_weight`, `location_blocks`, ...           |
+| Workplace  | `phase2c_workplace_score.py`  | `output/phase2c_workplace_scores.json`  | `job_id`, `workplace_interpretation`, `workplace_score`, `workplace_confidence`, `workplace_weight`, `workplace_blocks`, ...      |
 
-**Join contract (VERIFIED):** all four score files contain exactly 20 records,
+**Join contract (VERIFIED):** all six score files contain exactly 20 records,
 each with unique `job_id`, and the `job_id` set exactly equals the `job_records.json`
 set. `job_id` is the canonical join key for composite scoring.
 
@@ -181,28 +209,25 @@ set. `job_id` is the canonical join key for composite scoring.
 
 **Phase 2B:** Raw jobs → canonicalization → normalization → dedup → eligibility/status.
 
-**Phase 2C:** Salary + Experience + Skills + Role (+ future **Location**, future
-**Workplace**) → **Composite score** → **Ranking** → **Recommendation tier**.
+**Phase 2C:** Salary + Experience + Skills + Role + Location + Workplace → **Composite score** → **Ranking** → **Recommendation tier**.
 
 Only after ranking is stable should Phase 3 (application automation) be designed.
 
-**NOT yet implemented:** composite scoring, location scoring, workplace scoring,
-application automation, application submission, emails, account creation, Apply clicks.
+**NOT yet implemented:** application automation, application submission, emails, account creation, Apply clicks.
 
 ---
 
-## 10. Next Step — Phase 2C Location + Workplace Scoring (RESERVED 0.20 WEIGHT)
+## 10. Next Step — Phase 3 Application Preparation/Submission/Tracking
 
-Location and Workplace scoring are **design-only** (ADR-008, ADR-009). The composite scoring, ranking, and application decision layers are **already implemented** (ADR-011, ADR-012, ADR-013).
+Phase 3 is gated by explicit approval (ADR-010). The application-decision shortlist feeds it. Must include an explicit safety/approval mechanism and persistent application state.
 
-Before implementing Location/Workplace scoring, a future session must:
+Before implementing Phase 3, a future session must:
 
 1. Inspect all existing files.
 2. Verify the composite scoring outputs and 1:1 join on `job_id`.
 3. Verify the protected modules are unchanged.
-4. Review the reserved weight (0.20 = Location 0.10 + Workplace 0.10).
-5. Propose Location/Workplace scoring policies to the user.
-6. Get explicit user approval BEFORE coding Location/Workplace scoring.
+4. Propose Phase 3 architecture to the user.
+5. Get explicit user approval BEFORE coding.
 
 ---
 
@@ -210,9 +235,11 @@ Before implementing Location/Workplace scoring, a future session must:
 
 1. **Read this file (`PROJECT_STATE.md`) and `CLAUDE.md` first.**
 2. Verify frozen files are unchanged (§4).
-3. Verify the four score files still join cleanly on `job_id` (§7).
+3. Verify the six score files still join cleanly on `job_id` (§7).
 4. Confirm aggregate distributions still match §6 before any downstream work.
 5. Do NOT modify any frozen file (§4) without explicit authorization.
-6. Do NOT implement composite scoring (or location/workplace scoring) without
-   explicit approval.
+6. Do NOT implement application automation without explicit approval.
 7. Do NOT implement or run any application automation.
+8. Never invent missing job info (salary/experience/skills/location/workplace);
+   missing → `UNAVAILABLE`/`UNCLEAR` neutral handling per locked rules.
+9. Scoring ranks/deprioritizes only; it never silently becomes an eligibility rejection.

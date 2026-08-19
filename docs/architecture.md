@@ -1,9 +1,11 @@
 # Architecture
 
-Status: **TARGET / NOT YET IMPLEMENTED.** This document describes the intended
+Status: **TARGET / PARTIALLY IMPLEMENTED.** This document describes the intended
 production architecture and maps the current working implementation onto it. It
 is a roadmap, not a description of files that exist yet. Current code lives in
-`phase2b/` and is **frozen** — see the migration rules below.
+`phase2b/` and is **frozen** — see the migration rules below. Composite scoring,
+ranking, application decision, location scoring, and workplace scoring are now
+implemented.
 
 ---
 
@@ -28,12 +30,12 @@ visible.
 | 11  | **Scheduling**              | Recurring discovery/scoring runs.                                                            |
 | 12  | **Observability**           | Logging, metrics, auditability.                                                              |
 
-Current Phase 2B/2C implements #2–#7 with **composite scoring, ranking, and the
-application-decision layer complete** (weights salary 0.15 / exp 0.20 / skills
-0.30 / role 0.15; implemented 0.80, reserved 0.20; ranking by descending composite
-score, ascending `job_id` tie-break; application decision per ADR-013). The
-application decision is a **proposed shortlist only** — it never submits. #8–#12
-and #10 tracking are **future/out of scope**.
+Current Phase 2B/2C implements #2–#7 with **composite scoring (six components),
+ranking, and the application-decision layer complete** (weights salary 0.15 / exp
+0.20 / skills 0.30 / role 0.15 / location 0.10 / workplace 0.10 = 1.00;
+ranking by descending composite score, ascending `job_id` tie-break; application
+decision per ADR-013). The application decision is a **proposed shortlist only**
+— it never submits. #8–#12 and #10 tracking are **future/out of scope**.
 
 ---
 
@@ -79,9 +81,11 @@ behavior-preserving refactor.
 | `phase2b/phase2c_experience_score.py`              | `scoring/experience.py`                                                                                                     | Direct port; move target band to config.                                                                                                           |
 | `phase2b/phase2c_skill_score.py`                   | `scoring/skills.py`                                                                                                         | Direct port; move tier profile + aliases to config.                                                                                                |
 | `phase2b/phase2c_role_score.py`                    | `scoring/role.py`                                                                                                           | Direct port; move target-role patterns to config.                                                                                                  |
-| `phase2b/phase2c_composite_score.py`               | `scoring/composite.py`                                                                                                      | New (non-frozen); consumes the four component files + canonical records, joins on `job_id`. Weights/tiers approved (ADR-011).                      |
+| `phase2b/phase2c_location_score.py`                | `scoring/location.py`                                                                                                       | Direct port; move geographic preferences to config.                                                                                                |
+| `phase2b/phase2c_workplace_score.py`               | `scoring/workplace.py`                                                                                                      | Direct port; move workplace preferences to config.                                                                                                 |
+| `phase2b/phase2c_composite_score.py`               | `scoring/composite.py`                                                                                                      | New (non-frozen); consumes the six component files + canonical records, joins on `job_id`. Weights/tiers approved (ADR-011).                       |
 | `phase2b/phase2c_ranking.py`                       | `ranking/ranker.py`                                                                                                         | New (non-frozen); orders composite records by descending composite score, ascending `job_id` tie-break (ADR-012).                                  |
-| `phase2b/phase2c_application_decision.py`          | `applications/decision.py`                                                                                                  | New (non-frozen); decides which ranked jobs are proposed as application candidates (proposed shortlist only, gated by approval) (ADR-013).        |
+| `phase2b/phase2c_application_decision.py`          | `applications/decision.py`                                                                                                  | New (non-frozen); decides which ranked jobs are proposed as application candidates (proposed shortlist only, gated by approval) (ADR-013).         |
 | `phase2b/input/raw_records.json`                   | `data/raw/`                                                                                                                 | Source data artifact.                                                                                                                              |
 | `phase2b/output/job_records.json`                  | `data/canonical/`                                                                                                           | Canonical job records.                                                                                                                             |
 | `phase2b/output/phase2c_*.json`                    | `data/scored/`                                                                                                              | Component score files.                                                                                                                             |
@@ -203,10 +207,9 @@ DISCOVERED → ELIGIBLE → REVIEW → RECOMMENDED → APPROVED → PREPARING
 2. **Hardcoded configuration** — skill tiers/aliases, role patterns, salary
    thresholds (`MIN_LPA`/`PREF_LPA`), and experience band are embedded in the
    modules. Must move to `config/` (§7).
-3. **Hardcoded, un-renormalized weights** — each scorer hardcodes its weight
-   (0.15/0.20/0.30/0.15) and they sum to **0.80**, not 1.00. Composite scoring is
-   blocked until weights (incl. location/workplace) are approved. See
-   `docs/scoring.md`.
+3. **Hardcoded weights** — each scorer hardcodes its weight
+   (0.15/0.20/0.30/0.15/0.10/0.10) and they sum to **1.00**. Weights are approved
+   and implemented (ADR-011). See `docs/scoring.md`.
 4. **`print()` logging** — no structured logging; observability is minimal.
 5. **No persistence abstraction / idempotency guard** — JSON-only; repeated
    ingest has no explicit dedup-on-reingest guard at the store layer.
