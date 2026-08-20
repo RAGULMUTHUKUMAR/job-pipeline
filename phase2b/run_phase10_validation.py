@@ -1,24 +1,9 @@
 #!/usr/bin/env python3
 """
-Phase 9 — Production Daily Job Run Orchestration
+Phase 10: Fresh Real Apify Production Validation
 
-Runs the complete frozen production pipeline end-to-end:
-Apify → apify_ingestion_adapter.py → Phase 2B canonicalization →
-6 component scorers → composite scoring → ranking → application decision →
-Phase 4 application queue → Google Drive upload
-
-HARD CONSTRAINTS (enforced by design):
-- NO modification of any existing scoring logic
-- NO modification of pipeline.py or frozen scorers
-- NO change to locked scoring weights, thresholds, eligibility rules, or decision policies
-- NO application submission / browser automation / LinkedIn login
-- NO overwrite of frozen baseline input or production outputs
-- Preserve ALL existing safety invariants
-- Use existing Apify MCP and Google Drive MCP connections
-- Isolated run directory per execution
-- Fail safely if any stage fails
-- Validate record counts and job_id joins between stages
-- Validate that no application submission occurs
+Runs the existing Phase 9 pipeline with a fresh Apify dataset.
+Uses the existing apify_ingestion_adapter and the orchestrator pattern.
 """
 
 import json
@@ -31,7 +16,6 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, NoReturn
 from dataclasses import dataclass, asdict, field
 
-# Import frozen modules using the module-level constant monkeypatching pattern
 PHASE2B_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(PHASE2B_DIR))
 
@@ -51,8 +35,6 @@ import apify_ingestion_adapter as apify_adapter
 
 @dataclass
 class RunSummary:
-    """Concise run summary for reporting."""
-
     run_id: str
     started_at: str
     completed_at: Optional[str] = None
@@ -69,29 +51,12 @@ class RunSummary:
     stage_outputs: Dict[str, str] = field(default_factory=dict)
 
 
-class DailyPipelineOrchestrator:
-    """Orchestrates the complete daily pipeline run in isolation."""
-
-    # Google Drive target folder for application queue uploads
-    # User needs to configure this with their actual folder ID
-    DRIVE_APPLICATION_QUEUE_FOLDER_ID = (
-        "12T6GGroewmUSpy19QpTHY-FNovfbOpgB"  # "Dump" folder as fallback
-    )
-
-    def __init__(
-        self,
-        max_jobs: int = 5,
-        apify_keywords: str = "software engineer javascript react nodejs",
-        apify_location: str = "India",
-        apify_date_posted: str = "pastWeek",
-    ):
+class Phase10Validator:
+    def __init__(self, max_jobs: int = 10):
         self.max_jobs = max_jobs
-        self.apify_keywords = apify_keywords
-        self.apify_location = apify_location
-        self.apify_date_posted = apify_date_posted
 
         # Create isolated run directory
-        self.run_id = f"daily_run_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        self.run_id = f"phase10_run_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         self.run_dir = Path("/tmp") / self.run_id
         self.input_dir = self.run_dir / "input"
         self.output_dir = self.run_dir / "output"
@@ -105,13 +70,11 @@ class DailyPipelineOrchestrator:
             started_at=datetime.now().isoformat(),
         )
 
-        # Redirect stdout/stderr to log file as well
-        self._log(f"=== DAILY PIPELINE RUN STARTED: {self.run_id} ===")
+        self._log(f"=== PHASE 10 VALIDATION STARTED: {self.run_id} ===")
         self._log(f"Run directory: {self.run_dir}")
         self._log(f"Max jobs: {self.max_jobs}")
 
     def _log(self, message: str) -> None:
-        """Write to both console and log file."""
         timestamp = datetime.now().strftime("%H:%M:%S")
         line = f"[{timestamp}] {message}"
         print(line)
@@ -119,7 +82,6 @@ class DailyPipelineOrchestrator:
             f.write(line + "\n")
 
     def _fail(self, stage: str, error: str) -> NoReturn:
-        """Record failure and update summary."""
         self.summary.failures.append(f"{stage}: {error}")
         self._log(f"FAILURE in {stage}: {error}")
         self.summary.completed_at = datetime.now().isoformat()
@@ -127,58 +89,25 @@ class DailyPipelineOrchestrator:
         raise RuntimeError(f"Pipeline failed at {stage}: {error}")
 
     def _write_summary(self) -> None:
-        """Write run summary to JSON file."""
         summary_path = self.output_dir / "run_summary.json"
         with open(summary_path, "w") as f:
             json.dump(asdict(self.summary), f, indent=2)
         self._log(f"Run summary written: {summary_path}")
 
-    def run_apify_ingestion(self) -> Tuple[List[Dict[str, Any]], str]:
-        """Fetch fresh jobs from Apify and transform using ingestion adapter."""
-        self._log("Stage 1: Apify ingestion via MCP...")
+    def run_apify_ingestion(
+        self, apify_items: List[Dict[str, Any]]
+    ) -> Tuple[List[Dict[str, Any]], str]:
+        """Transform fresh Apify items using ingestion adapter."""
+        self._log("Stage 1: Apify ingestion (fresh data)...")
 
         try:
-            # Call Apify Actor via MCP
-            actor_input = {
-                "keywords": self.apify_keywords,
-                "location": self.apify_location,
-                "datePosted": self.apify_date_posted,
-                "limitPerSource": self.max_jobs,
-                "scrapeCompany": True,
-            }
-
-            self._log(
-                f"Calling Apify Actor with input: {json.dumps(actor_input, indent=2)}"
-            )
-
-            # Use the generic call-actor tool via MCP
-            result = self._call_apify_actor(
-                "curious_coder/linkedin-jobs-scraper", actor_input
-            )
-
-            if not result or "datasetId" not in result:
-                self._fail("apify_ingestion", "No dataset returned from Apify Actor")
-
-            dataset_id = result.get("datasetId")
-            if dataset_id is None:
-                self._fail("apify_ingestion", "datasetId is None from Apify Actor")
-
-            self._log(f"Apify dataset created: {dataset_id}")
-
-            # Fetch dataset items
-            items = self._fetch_apify_dataset(dataset_id)
-            self._log(f"Fetched {len(items)} items from dataset {dataset_id}")
-
-            self.summary.apify_input_count = len(items)
-
-            # Transform using the ingestion adapter
             adapter = apify_adapter.ApifyIngestionAdapter(
                 max_jobs=self.max_jobs,
                 output_dir=str(self.input_dir),
-                test_prefix="daily_ingestion_",
+                test_prefix="phase10_ingestion_",
             )
 
-            adapter_result = adapter.run(items)
+            adapter_result = adapter.run(apify_items)
 
             if adapter_result["metadata"]["valid_records"] == 0:
                 self._fail("apify_ingestion", "No valid records after transformation")
@@ -193,62 +122,37 @@ class DailyPipelineOrchestrator:
                 ingestion_data = json.load(f)
 
             transformed_items = ingestion_data["items"]
+            self.summary.apify_input_count = len(transformed_items)
             self._log(f"Apify ingestion complete: {len(transformed_items)} records")
 
-            return transformed_items, dataset_id
+            return transformed_items, adapter_result["metadata"].get(
+                "datasetId", "fresh_apify"
+            )
 
         except Exception as e:
             self._fail(
                 "apify_ingestion", f"{type(e).__name__}: {e}\n{traceback.format_exc()}"
             )
 
-    def _call_apify_actor(
-        self, actor: str, input_data: Dict[str, Any]
-    ) -> Dict[str, Any]:
-        """Call Apify Actor via MCP."""
-        try:
-            # Use the mcp__apify__call-actor tool
-            from mcp import call_tool
-
-            # Actually we need to use the tool directly - this is a placeholder
-            # In practice, the tool is available as mcp__apify__call-actor
-            pass
-        except Exception:
-            # We'll use the tool directly in the main flow
-            pass
-
-        # This is a placeholder - the actual call happens inline
-        return {}
-
-    def _fetch_apify_dataset(self, dataset_id: str) -> List[Dict[str, Any]]:
-        """Fetch items from Apify dataset via MCP."""
-        # This will be called via the MCP tool directly
-        return []
-
     def run_phase2b_canonicalization(self, raw_items: List[Dict[str, Any]]) -> int:
-        """Run Phase 2B canonicalization pipeline."""
         self._log("Stage 2: Phase 2B canonicalization...")
 
         try:
-            # Build raw_records.json format
             raw_payload = {
-                "datasetId": f"daily_apify_{datetime.now().strftime('%Y%m%d')}",
+                "datasetId": f"phase10_apify_{datetime.now().strftime('%Y%m%d')}",
                 "items": raw_items,
             }
             raw_input_path = self.input_dir / "raw_records.json"
             with open(raw_input_path, "w") as f:
                 json.dump(raw_payload, f, indent=2)
 
-            # Monkeypatch pipeline I/O paths
-            setattr(P, "INPUT_RAW", raw_input_path)
-            setattr(P, "OUT_DIR", self.output_dir)
-            setattr(P, "DISCOVERED_DATE", datetime.now().date().isoformat())
-            setattr(P, "DATASET_ID", f"daily_{datetime.now().strftime('%Y%m%d')}")
+            P.INPUT_RAW = raw_input_path
+            P.OUT_DIR = self.output_dir
+            P.DISCOVERED_DATE = datetime.now().date().isoformat()
+            P.DATASET_ID = f"phase10_{datetime.now().strftime('%Y%m%d')}"
 
-            # Run pipeline
             P.main()
 
-            # Verify output
             job_records_path = self.output_dir / "job_records.json"
             with open(job_records_path) as f:
                 records = json.load(f)
@@ -256,7 +160,6 @@ class DailyPipelineOrchestrator:
             self.summary.canonical_record_count = len(records)
             self._log(f"Phase 2B complete: {len(records)} canonical records")
 
-            # Count eligibility
             eligible = sum(1 for r in records if r["match_eligibility"] == "ELIGIBLE")
             review = sum(1 for r in records if r["match_eligibility"] == "REVIEW")
             blocked = sum(1 for r in records if r["match_eligibility"] == "BLOCKED")
@@ -274,7 +177,6 @@ class DailyPipelineOrchestrator:
             )
 
     def run_component_scorers(self) -> None:
-        """Run all six Phase 2C component scorers."""
         self._log("Stage 3: Six component scorers...")
 
         in_records = self.output_dir / "job_records.json"
@@ -295,7 +197,6 @@ class DailyPipelineOrchestrator:
                 setattr(module, "OUT", self.output_dir / out_file)
                 module.main()
 
-                # Verify 1:1 join
                 with open(module.OUT) as f:
                     scores = json.load(f)
                 with open(in_records) as f:
@@ -317,38 +218,20 @@ class DailyPipelineOrchestrator:
                 )
 
     def run_composite_scoring(self) -> None:
-        """Run Phase 2C composite scoring."""
         self._log("Stage 4: Composite scoring...")
 
         try:
             in_records = self.output_dir / "job_records.json"
 
             setattr(composite, "IN_RECORDS", in_records)
-            setattr(
-                composite, "IN_SALARY", self.output_dir / "phase2c_salary_scores.json"
-            )
-            setattr(
-                composite,
-                "IN_EXPERIENCE",
-                self.output_dir / "phase2c_experience_scores.json",
-            )
-            setattr(
-                composite, "IN_SKILL", self.output_dir / "phase2c_skill_scores.json"
-            )
+            setattr(composite, "IN_SALARY", self.output_dir / "phase2c_salary_scores.json")
+            setattr(composite, "IN_EXPERIENCE", self.output_dir / "phase2c_experience_scores.json")
+            setattr(composite, "IN_SKILL", self.output_dir / "phase2c_skill_scores.json")
             setattr(composite, "IN_ROLE", self.output_dir / "phase2c_role_scores.json")
-            setattr(
-                composite,
-                "IN_LOCATION",
-                self.output_dir / "phase2c_location_scores.json",
-            )
-            setattr(
-                composite,
-                "IN_WORKPLACE",
-                self.output_dir / "phase2c_workplace_scores.json",
-            )
+            setattr(composite, "IN_LOCATION", self.output_dir / "phase2c_location_scores.json")
+            setattr(composite, "IN_WORKPLACE", self.output_dir / "phase2c_workplace_scores.json")
             setattr(composite, "OUT", self.output_dir / "phase2c_composite_scores.json")
 
-            # Use the same pattern as Phase 8: replace main with flexible version
             orig_main = composite.main
 
             def _test_main():
@@ -464,15 +347,10 @@ class DailyPipelineOrchestrator:
             )
 
     def run_ranking(self) -> None:
-        """Run Phase 2C ranking."""
         self._log("Stage 5: Ranking...")
 
         try:
-            setattr(
-                ranking,
-                "IN_COMPOSITE",
-                self.output_dir / "phase2c_composite_scores.json",
-            )
+            setattr(ranking, "IN_COMPOSITE", self.output_dir / "phase2c_composite_scores.json")
             setattr(ranking, "OUT", self.output_dir / "phase2c_rankings.json")
             ranking.main()
 
@@ -490,16 +368,12 @@ class DailyPipelineOrchestrator:
             self._fail("ranking", f"{type(e).__name__}: {e}\n{traceback.format_exc()}")
 
     def run_application_decision(self) -> None:
-        """Run Phase 2C application decision."""
         self._log("Stage 6: Application decision...")
 
         try:
             setattr(decision, "IN_RANKING", self.output_dir / "phase2c_rankings.json")
-            setattr(
-                decision, "OUT", self.output_dir / "phase2c_application_decisions.json"
-            )
+            setattr(decision, "OUT", self.output_dir / "phase2c_application_decisions.json")
 
-            # Patch main to handle empty candidate list
             orig_main = decision.main
 
             def _test_decision_main():
@@ -563,7 +437,6 @@ class DailyPipelineOrchestrator:
                 else:
                     self._log("No CANDIDATE records (all REVIEW or NOT_RECOMMENDED)")
 
-                # Verify no application submission logic exists
                 for d in decisions:
                     assert "apply" not in str(
                         d
@@ -583,20 +456,12 @@ class DailyPipelineOrchestrator:
             )
 
     def run_application_queue(self) -> None:
-        """Run Phase 4 application queue preparation."""
         self._log("Stage 7: Application queue preparation...")
 
         try:
-            setattr(
-                queue,
-                "INPUT_FILE",
-                self.output_dir / "phase2c_application_decisions.json",
-            )
-            setattr(
-                queue, "OUTPUT_FILE", self.output_dir / "phase4_application_queue.json"
-            )
+            setattr(queue, "INPUT_FILE", self.output_dir / "phase2c_application_decisions.json")
+            setattr(queue, "OUTPUT_FILE", self.output_dir / "phase4_application_queue.json")
 
-            # Patch main to allow empty candidate list
             orig_main = queue.main
 
             def _test_queue_main():
@@ -605,7 +470,6 @@ class DailyPipelineOrchestrator:
 
                 self.summary.queue_count = len(candidates)
 
-                # Validate output - relaxed: allow empty candidate list
                 for c in candidates:
                     assert (
                         c["application_decision"] == "CANDIDATE"
@@ -649,7 +513,6 @@ class DailyPipelineOrchestrator:
 
                 self._log(f"Queue: {len(candidates)} candidate records prepared")
 
-                # Verify by re-reading
                 with queue.OUTPUT_FILE.open("r", encoding="utf-8") as f:
                     reread = json.load(f)
                 assert reread == candidates, "Determinism check failed on re-read"
@@ -666,14 +529,12 @@ class DailyPipelineOrchestrator:
             )
 
     def upload_to_google_drive(self) -> None:
-        """Upload the application queue to Google Drive."""
         self._log("Stage 8: Google Drive upload...")
 
         try:
             import requests
             import json as json_lib
 
-            # Load Google Drive credentials from .claude/.credentials.json
             creds_path = Path("/home/ragul/.claude/.credentials.json")
             if not creds_path.exists():
                 self._fail(
@@ -705,7 +566,6 @@ class DailyPipelineOrchestrator:
 
             # Find or create the job-pipeline folder
             folder_id = None
-            # First, search for existing folder
             search_payload = {
                 "jsonrpc": "2.0",
                 "id": 1,
@@ -740,7 +600,6 @@ class DailyPipelineOrchestrator:
                     self._log(f"Found existing job-pipeline folder: {folder_id}")
 
             if not folder_id:
-                # Create the folder
                 create_payload = {
                     "jsonrpc": "2.0",
                     "id": 2,
@@ -765,7 +624,6 @@ class DailyPipelineOrchestrator:
                         "google_drive_upload", f"Failed to create folder: {result}"
                     )
 
-            # Upload the queue file
             queue_file = self.output_dir / "phase4_application_queue.json"
             if not queue_file.exists():
                 self._fail("google_drive_upload", "Queue file not found")
@@ -802,7 +660,11 @@ class DailyPipelineOrchestrator:
                 self.summary.google_drive_upload_result = (
                     f"SUCCESS: uploaded {file_name} (id: {file_id})"
                 )
+                self.summary.google_drive_file_id = file_id
                 self._log(f"Uploaded to Google Drive: {file_name} (id: {file_id})")
+
+                # Verify by downloading
+                self._verify_drive_upload(access_token, file_id, queue_content, headers)
             else:
                 self._fail("google_drive_upload", f"Upload failed: {result}")
 
@@ -812,29 +674,56 @@ class DailyPipelineOrchestrator:
                 f"{type(e).__name__}: {e}\n{traceback.format_exc()}",
             )
 
-    def run_full_pipeline(self) -> RunSummary:
-        """Execute the complete daily pipeline."""
+    def _verify_drive_upload(
+        self, access_token: str, file_id: str, local_content: str, headers: dict
+    ) -> None:
+        """Download the uploaded file and compare with local content."""
+        self._log("Verifying Google Drive upload via download...")
+
         try:
-            # Stage 1: Apify ingestion
-            # We'll fetch from Apify using the MCP tools directly
-            self._log("Fetching fresh jobs from Apify...")
+            import requests as requests_module
 
-            # Call the Apify actor via MCP
-            # This is done inline using the mcp__apify__call-actor tool
-            # For now, use the latest test ingestion file as a stand-in
-            # (In production, this would call the actual Apify Actor)
+            download_payload = {
+                "jsonrpc": "2.0",
+                "id": 4,
+                "method": "tools/call",
+                "params": {"name": "file_download", "arguments": {"fileId": file_id}},
+            }
 
-            latest_ingestion = sorted(PHASE2B_DIR.glob("output/test_ingestion_*.json"))[
-                -1
-            ]
-            self._log(f"Using latest test ingestion: {latest_ingestion.name}")
+            response = requests_module.post(
+                "http://localhost:3005/mcp",
+                json=download_payload,
+                headers=headers,
+                timeout=30,
+            )
+            result = response.json()
 
-            with open(latest_ingestion) as f:
-                ingestion = json.load(f)
+            if "result" in result and "structuredContent" in result["result"]:
+                downloaded_content = result["result"]["structuredContent"].get(
+                    "content", ""
+                )
+                if downloaded_content == local_content:
+                    self._log("Google Drive exact-match verification: PASS")
+                else:
+                    self._fail(
+                        "google_drive_verification",
+                        "Content mismatch between local and downloaded file",
+                    )
+            else:
+                self._fail("google_drive_verification", f"Download failed: {result}")
 
-            fresh_items = ingestion["items"]
-            self.summary.apify_input_count = len(fresh_items)
-            self._log(f"Fresh records to process: {len(fresh_items)}")
+        except Exception as e:
+            self._fail(
+                "google_drive_verification",
+                f"{type(e).__name__}: {e}\n{traceback.format_exc()}",
+            )
+
+    def run_full_pipeline(self, apify_items: List[Dict[str, Any]]) -> RunSummary:
+        try:
+            self._log(f"Processing {len(apify_items)} fresh Apify items...")
+
+            # Stage 1: Apify ingestion (fresh data)
+            fresh_items, dataset_id = self.run_apify_ingestion(apify_items)
 
             # Stage 2: Phase 2B
             self.run_phase2b_canonicalization(fresh_items)
@@ -861,7 +750,7 @@ class DailyPipelineOrchestrator:
             self.summary.completed_at = datetime.now().isoformat()
             self._write_summary()
 
-            self._log("=== DAILY PIPELINE RUN COMPLETE ===")
+            self._log("=== PHASE 10 VALIDATION COMPLETE ===")
             self._log(f"Run ID: {self.run_id}")
             self._log(f"Apify input: {self.summary.apify_input_count}")
             self._log(f"Canonical records: {self.summary.canonical_record_count}")
@@ -882,48 +771,44 @@ class DailyPipelineOrchestrator:
 
 
 def main():
-    """Main entry point for the daily pipeline."""
     import argparse
 
     parser = argparse.ArgumentParser(
-        description="Phase 9 — Daily Job Pipeline Orchestration"
+        description="Phase 10 — Fresh Real Apify Production Validation"
     )
     parser.add_argument(
-        "--max-jobs", type=int, default=5, help="Maximum jobs to process (default: 5)"
+        "--max-jobs", type=int, default=10, help="Maximum jobs to process (default: 10)"
     )
-    parser.add_argument(
-        "--keywords",
-        default="software engineer javascript react nodejs",
-        help="Apify search keywords",
-    )
-    parser.add_argument("--location", default="India", help="Apify search location")
-    parser.add_argument(
-        "--date-posted",
-        default="pastWeek",
-        choices=["anyTime", "past24Hours", "pastWeek", "pastMonth"],
-        help="Date posted filter",
-    )
-    parser.add_argument("--self-test", action="store_true", help="Run self-tests only")
     args = parser.parse_args()
 
-    if args.self_test:
-        print("Running self-tests...")
-        # Self-tests would go here
-        print("Self-tests: PASS")
-        return
+    # We already fetched the Apify data, so read it from the file we saved
+    # The Apify dataset ID is Wxg5YAKdJilyrCyyH, but we need to pass items to the script
+    # For now, we'll use the mcp__apify__get-dataset-items result
 
-    orchestrator = DailyPipelineOrchestrator(
-        max_jobs=args.max_jobs,
-        apify_keywords=args.keywords,
-        apify_location=args.location,
-        apify_date_posted=args.date_posted,
-    )
+    # We'll pass the items via stdin
+    print("Reading Apify items from stdin...")
+    try:
+        input_data = json.load(sys.stdin)
+        if isinstance(input_data, dict) and "items" in input_data:
+            apify_items = input_data["items"]
+        elif isinstance(input_data, list):
+            apify_items = input_data
+        else:
+            print("ERROR: Expected JSON with 'items' array or direct array")
+            sys.exit(1)
+    except json.JSONDecodeError as e:
+        print(f"ERROR: Invalid JSON input: {e}")
+        sys.exit(1)
 
-    summary = orchestrator.run_full_pipeline()
+    print(f"Loaded {len(apify_items)} fresh Apify items")
+
+    validator = Phase10Validator(max_jobs=args.max_jobs)
+
+    summary = validator.run_full_pipeline(apify_items)
 
     # Print final summary
     print("\n" + "=" * 60)
-    print("DAILY PIPELINE RUN SUMMARY")
+    print("PHASE 10 VALIDATION SUMMARY")
     print("=" * 60)
     print(f"Run ID:              {summary.run_id}")
     print(f"Started:             {summary.started_at}")
@@ -937,8 +822,6 @@ def main():
     print(f"Drive Upload:        {summary.google_drive_upload_result}")
     if summary.google_drive_file_id:
         print(f"Drive File ID:       {summary.google_drive_file_id}")
-    if summary.google_drive_file_url:
-        print(f"Drive File URL:      {summary.google_drive_file_url}")
     print(f"Failures:            {len(summary.failures)}")
     for failure in summary.failures:
         print(f"  - {failure}")
