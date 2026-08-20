@@ -27,3 +27,6 @@ Thumbs.db
 
 # Google OAuth credentials
 client_secret_*.json
+
+# Test ingestion output (regenerated, not production data)
+phase2b/output/test_ingestion_*.json
