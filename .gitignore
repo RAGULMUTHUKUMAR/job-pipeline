@@ -30,3 +30,6 @@ client_secret_*.json
 
 # Test ingestion output (regenerated, not production data)
 phase2b/output/test_ingestion_*.json
+
+# Sample is OK to commit
+!phase2b/output/sample_ingestion_output.json
