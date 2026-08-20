@@ -162,6 +162,26 @@ NOT_RECOMMENDED`. Output `phase2b/output/phase2c_application_decisions.json`.
   REVIEW 4 / NOT_RECOMMENDED 1. Application preparation, submission, and tracking
   remain NOT implemented (ADR-010).
 
+## ADR-014 — Phase 9 Daily Orchestration implemented (non-invasive, fail-safe)
+
+- **Status:** APPROVED (implemented 2026-08-20)
+- **Date:** 2026-08-20
+- **Decision:** Implement `phase2b/run_daily_pipeline.py` to run the complete frozen
+  pipeline end-to-end in isolated `/tmp/daily_run_<timestamp>/` directories. The
+  orchestrator **imports the frozen modules and monkeypatches their module-level I/O
+  constants** to point at the isolated run directory — no frozen file or production
+  output is modified or overwritten. Every stage validates record counts and `job_id`
+  joins before proceeding; failures abort the run and record a structured summary.
+  The final stage uploads the prepared application queue to Google Drive via the
+  `gdrive-upload` MCP server for human review.
+- **Consequences:** Production-safe daily runs without touching frozen code or
+  polluting baseline outputs. No application submission occurs (ADR-010). Supported
+  stages: Apify ingestion → ingestion adapter → Phase 2B → 6 scorers → composite →
+  ranking → application decision → Phase 4 queue → Google Drive upload.
+  **NOT implemented:** automatic daily scheduler (cron/systemd), real-time Apify Actor
+  call in the orchestrator (currently uses latest `test_ingestion_*.json` as a
+  stand-in), browser automation, LinkedIn application submission.
+
 ---
 
 ## Decision index
@@ -181,3 +201,4 @@ NOT_RECOMMENDED`. Output `phase2b/output/phase2c_application_decisions.json`.
 | 011 | Composite scoring implemented (weights + tiers approved)         | APPROVED                                     |
 | 012 | Ranking implemented (desc composite score, asc job_id tie-break) | APPROVED                                     |
 | 013 | Application-decision layer implemented (inclusive policy)        | APPROVED                                     |
+| 014 | Daily orchestration implemented (non-invasive, fail-safe)        | APPROVED                                     |

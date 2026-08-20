@@ -38,3 +38,19 @@ exact next step.
 `preferred_skills`, `match_eligibility`, `data_quality_status`, `dedup_cluster_id`.
 
 Run a script with: `python3 <script>.py` (writes its output JSON into `output/`).
+
+## Phase 9 — Daily Orchestration (IMPLEMENTED)
+
+`run_daily_pipeline.py` runs the complete frozen pipeline end-to-end in isolated
+`/tmp/daily_run_<timestamp>/` directories.
+
+```bash
+python3 run_daily_pipeline.py --max-jobs 5    # real end-to-end run, 5 jobs
+python3 run_daily_pipeline.py --self-test     # self-tests only
+```
+
+Stages: Apify → ingestion adapter → Phase 2B → 6 scorers → composite → ranking
+→ application decision → Phase 4 queue → Google Drive upload.
+
+**Safety:** no frozen file modification, no production output overwrite, no
+application automation, isolated run dirs, fail-safe validation, run summary JSON.

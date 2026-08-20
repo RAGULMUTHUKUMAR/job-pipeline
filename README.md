@@ -11,19 +11,22 @@ Node.js software engineer profile.
 
 ## Status (verified 2026-08-19)
 
-| Component                        | Status                                        |
-| -------------------------------- | --------------------------------------------- |
-| Phase 2B — Canonical job data    | **COMPLETE / FROZEN**                         |
-| Phase 2C — Salary scoring        | **COMPLETE / FROZEN**                         |
-| Phase 2C — Experience scoring    | **COMPLETE / FROZEN**                         |
-| Phase 2C — Skills scoring        | **COMPLETE / FROZEN**                         |
-| Phase 2C — Role scoring          | **COMPLETE / FROZEN**                         |
-| Phase 2C — Location scoring      | **COMPLETE / IMPLEMENTED**                    |
-| Phase 2C — Workplace scoring     | **COMPLETE / IMPLEMENTED**                    |
-| Phase 2C — Composite scoring     | **COMPLETE / IMPLEMENTED**                    |
-| Phase 2C — Ranking               | **COMPLETE / IMPLEMENTED**                    |
-| Phase 2C — Application Decision  | **COMPLETE / IMPLEMENTED**                    |
-| Phase 3 — Application automation | **OUT OF SCOPE** (requires explicit approval) |
+| Component                         | Status                                        |
+| --------------------------------- | --------------------------------------------- |
+| Phase 2B — Canonical job data     | **COMPLETE / FROZEN**                         |
+| Phase 2C — Salary scoring         | **COMPLETE / FROZEN**                         |
+| Phase 2C — Experience scoring     | **COMPLETE / FROZEN**                         |
+| Phase 2C — Skills scoring         | **COMPLETE / FROZEN**                         |
+| Phase 2C — Role scoring           | **COMPLETE / FROZEN**                         |
+| Phase 2C — Location scoring       | **COMPLETE / IMPLEMENTED**                    |
+| Phase 2C — Workplace scoring      | **COMPLETE / IMPLEMENTED**                    |
+| Phase 2C — Composite scoring      | **COMPLETE / IMPLEMENTED**                    |
+| Phase 2C — Ranking                | **COMPLETE / IMPLEMENTED**                    |
+| Phase 2C — Application Decision   | **COMPLETE / IMPLEMENTED**                    |
+| Phase 4 — Application Queue Prep  | **COMPLETE / IMPLEMENTED**                    |
+| Phase 7 — Apify Ingestion Adapter | **COMPLETE / IMPLEMENTED**                    |
+| Phase 9 — Daily Orchestration     | **COMPLETE / IMPLEMENTED**                    |
+| Phase 3 — Application automation  | **OUT OF SCOPE** (requires explicit approval) |
 
 ## Layout
 
@@ -43,6 +46,29 @@ job-pipeline/
 Phase 2C component scorers). It is **not** being rewritten in place; the target
 architecture in `docs/architecture.md` is being built up around it incrementally.
 See `docs/architecture.md` for the current→future file mapping.
+
+## Daily pipeline orchestration (Phase 9)
+
+`phase2b/run_daily_pipeline.py` runs the complete frozen pipeline end-to-end in an
+isolated `/tmp/daily_run_<timestamp>/` directory:
+
+```
+Apify (fresh jobs) → apify_ingestion_adapter → Phase 2B canonicalize
+  → 6 component scorers → composite → ranking → application decision
+  → Phase 4 application queue → Google Drive upload
+```
+
+Usage:
+
+```bash
+cd phase2b
+python3 run_daily_pipeline.py --max-jobs 5   # real end-to-end run, 5 jobs
+python3 run_daily_pipeline.py --self-test    # self-tests only
+```
+
+**Safety guarantees:** no frozen file is modified; no production output is
+overwritten; no application is submitted (ADR-010); isolated run directories;
+fail-safe validation of record counts and `job_id` joins between every stage.
 
 ## Hard rules
 
@@ -71,6 +97,18 @@ python3 phase2c_composite_score.py
 python3 phase2c_ranking.py
 python3 phase2c_application_decision.py
 ```
+
+## Running the daily orchestration (Phase 9)
+
+```bash
+cd phase2b
+python3 run_daily_pipeline.py --max-jobs 5    # real end-to-end run, 5 jobs
+python3 run_daily_pipeline.py --self-test     # self-tests only
+```
+
+The orchestrator creates an isolated run directory at `/tmp/daily_run_<timestamp>/`
+with `input/` and `output/` subdirectories, and produces `run_summary.json` with
+metrics including Google Drive upload result.
 
 Re-running these regenerates their (deterministic) outputs. Each scorer runs a
 self-test asserting the locked policy invariants (e.g. `*_blocks == false`,

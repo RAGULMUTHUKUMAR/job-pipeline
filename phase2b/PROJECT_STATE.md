@@ -48,6 +48,9 @@ phase2b/
 ├── phase2c_composite_score.py      # Phase 2C composite scoring (IMPLEMENTED)
 ├── phase2c_ranking.py              # Phase 2C ranking (IMPLEMENTED)
 ├── phase2c_application_decision.py # Phase 2C application decision (IMPLEMENTED)
+├── apify_ingestion_adapter.py      # Phase 7 — Apify → pipeline raw format (IMPLEMENTED)
+├── phase4_application_queue.py     # Phase 4 — Application queue prep (IMPLEMENTED)
+├── run_daily_pipeline.py           # Phase 9 — Daily orchestration (IMPLEMENTED)
 ├── PROJECT_STATE.md                # THIS FILE
 └── CLAUDE.md                       # Short instructions for future sessions
 ```
@@ -56,18 +59,21 @@ phase2b/
 
 ## 3. Completed Phases
 
-| Phase                         | Status                 | What it does                                                                                                                                                                   |
-| ----------------------------- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **2B — Canonical Job Data**   | COMPLETE / FROZEN      | Raw → canonicalize → normalize → dedup → eligibility/status. `pipeline.py`.                                                                                                    |
-| **2C — Salary Scoring**       | COMPLETE / FROZEN      | Salary component score per record. `phase2c_salary_score.py`.                                                                                                                  |
-| **2C — Experience Scoring**   | COMPLETE / FROZEN      | Experience component score per record. `phase2c_experience_score.py`.                                                                                                          |
-| **2C — Skills Scoring**       | COMPLETE / FROZEN      | Skills component score per record. `phase2c_skill_score.py`.                                                                                                                   |
-| **2C — Role/Title Scoring**   | COMPLETE / FROZEN      | Role component score per record. `phase2c_role_score.py`.                                                                                                                      |
-| **2C — Location Scoring**     | COMPLETE / IMPLEMENTED | Location/geography component score per record. `phase2c_location_score.py`.                                                                                                    |
-| **2C — Workplace Scoring**    | COMPLETE / IMPLEMENTED | Workplace mode component score per record. `phase2c_workplace_score.py`.                                                                                                       |
-| **2C — Composite Scoring**    | COMPLETE / IMPLEMENTED | Combines 6 components (salary 0.15, exp 0.20, skills 0.30, role 0.15, location 0.10, workplace 0.10) into composite score + recommendation tier. `phase2c_composite_score.py`. |
-| **2C — Ranking**              | COMPLETE / IMPLEMENTED | Orders jobs by descending composite_score, ascending job_id tie-break. `phase2c_ranking.py`.                                                                                   |
-| **2C — Application Decision** | COMPLETE / IMPLEMENTED | Proposed shortlist: CANDIDATE = ELIGIBLE + RECOMMEND/CONSIDER. `phase2c_application_decision.py`.                                                                              |
+| Phase                           | Status                 | What it does                                                                                                                                                                   |
+| ------------------------------- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **2B — Canonical Job Data**     | COMPLETE / FROZEN      | Raw → canonicalize → normalize → dedup → eligibility/status. `pipeline.py`.                                                                                                    |
+| **2C — Salary Scoring**         | COMPLETE / FROZEN      | Salary component score per record. `phase2c_salary_score.py`.                                                                                                                  |
+| **2C — Experience Scoring**     | COMPLETE / FROZEN      | Experience component score per record. `phase2c_experience_score.py`.                                                                                                          |
+| **2C — Skills Scoring**         | COMPLETE / FROZEN      | Skills component score per record. `phase2c_skill_score.py`.                                                                                                                   |
+| **2C — Role/Title Scoring**     | COMPLETE / FROZEN      | Role component score per record. `phase2c_role_score.py`.                                                                                                                      |
+| **2C — Location Scoring**       | COMPLETE / IMPLEMENTED | Location/geography component score per record. `phase2c_location_score.py`.                                                                                                    |
+| **2C — Workplace Scoring**      | COMPLETE / IMPLEMENTED | Workplace mode component score per record. `phase2c_workplace_score.py`.                                                                                                       |
+| **2C — Composite Scoring**      | COMPLETE / IMPLEMENTED | Combines 6 components (salary 0.15, exp 0.20, skills 0.30, role 0.15, location 0.10, workplace 0.10) into composite score + recommendation tier. `phase2c_composite_score.py`. |
+| **2C — Ranking**                | COMPLETE / IMPLEMENTED | Orders jobs by descending composite_score, ascending job_id tie-break. `phase2c_ranking.py`.                                                                                   |
+| **2C — Application Decision**   | COMPLETE / IMPLEMENTED | Proposed shortlist: CANDIDATE = ELIGIBLE + RECOMMEND/CONSIDER. `phase2c_application_decision.py`.                                                                              |
+| **7 — Apify Ingestion Adapter** | COMPLETE / IMPLEMENTED | Transforms Apify LinkedIn Jobs Scraper output to pipeline raw format. `apify_ingestion_adapter.py`.                                                                            |
+| **4 — Application Queue Prep**  | COMPLETE / IMPLEMENTED | Prepares application queue from CANDIDATE decisions. `phase4_application_queue.py`.                                                                                            |
+| **9 — Daily Orchestration**     | COMPLETE / IMPLEMENTED | Runs full pipeline end-to-end: Apify → 2B → 6 scorers → composite → ranking → decision → queue → Drive. Isolated run dirs, fail-safe. `run_daily_pipeline.py`.                 |
 
 **Next planned (NOT yet implemented):** **Phase 3 — Application preparation/submission/tracking** (gated by approval, ADR-010).
 
@@ -231,7 +237,38 @@ Before implementing Phase 3, a future session must:
 
 ---
 
-## 11. Recovery Instructions (read this first in every session)
+## 11. Phase 9 — Daily Orchestration (IMPLEMENTED)
+
+`phase2b/run_daily_pipeline.py` runs the complete frozen pipeline end-to-end in an isolated `/tmp/daily_run_<timestamp>/` directory:
+
+```
+Apify (fresh jobs) → apify_ingestion_adapter → Phase 2B canonicalize
+  → 6 component scorers → composite → ranking → application decision
+  → Phase 4 application queue → Google Drive upload
+```
+
+Usage:
+
+```bash
+cd phase2b
+python3 run_daily_pipeline.py --max-jobs 5    # real end-to-end run, 5 jobs
+python3 run_daily_pipeline.py --self-test     # self-tests only
+```
+
+**Safety guarantees:**
+
+- No frozen file is modified (monkeypatching pattern for I/O paths).
+- No production output is overwritten (isolated run directory).
+- No application is submitted (ADR-010).
+- Isolated run directories per execution.
+- Fail-safe validation of record counts and `job_id` joins between every stage.
+- Run summary written to `run_summary.json` with metrics + Drive result.
+
+**NOT implemented:** automatic daily scheduler (cron/systemd), real-time Apify Actor call (currently uses latest `test_ingestion_*.json` as stand-in), browser automation, LinkedIn application submission.
+
+---
+
+## 12. Recovery Instructions (read this first in every session)
 
 1. **Read this file (`PROJECT_STATE.md`) and `CLAUDE.md` first.**
 2. Verify frozen files are unchanged (§4).

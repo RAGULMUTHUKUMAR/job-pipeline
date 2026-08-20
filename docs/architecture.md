@@ -37,6 +37,13 @@ ranking by descending composite score, ascending `job_id` tie-break; application
 decision per ADR-013). The application decision is a **proposed shortlist only**
 — it never submits. #8–#12 and #10 tracking are **future/out of scope**.
 
+**Phase 9 — Daily Orchestration (IMPLEMENTED):** `phase2b/run_daily_pipeline.py`
+runs the complete pipeline end-to-end in isolated `/tmp/daily_run_<timestamp>/`
+directories. It imports the frozen modules and monkeypatches their I/O constants
+(non-invasive), preserving frozen files byte-identical. Stages: Apify ingestion →
+ingestion adapter → Phase 2B canonicalization → 6 component scorers → composite →
+ranking → application decision → Phase 4 queue → Google Drive upload. See ADR-014.
+
 ---
 
 ## 2. Target production layout
@@ -74,23 +81,26 @@ This maps the frozen `phase2b/` implementation onto the target `src/job_pipeline
 **Nothing moves in this task.** The mapping is the plan for an incremental,
 behavior-preserving refactor.
 
-| Current file (frozen)                              | Future module(s)                                                                                                            | Notes                                                                                                                                              |
-| -------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `phase2b/pipeline.py`                              | `ingestion/`, `normalization/parsers.py`, `normalization/canonicalize.py`, `normalization/dedup.py`, `eligibility/rules.py` | **Monolith.** Splits naturally into parsers (url/location/workplace/experience/seniority/salary/skills), canonicalization, dedup, and eligibility. |
-| `phase2b/phase2c_salary_score.py`                  | `scoring/salary.py`                                                                                                         | Direct port; move thresholds to config.                                                                                                            |
-| `phase2b/phase2c_experience_score.py`              | `scoring/experience.py`                                                                                                     | Direct port; move target band to config.                                                                                                           |
-| `phase2b/phase2c_skill_score.py`                   | `scoring/skills.py`                                                                                                         | Direct port; move tier profile + aliases to config.                                                                                                |
-| `phase2b/phase2c_role_score.py`                    | `scoring/role.py`                                                                                                           | Direct port; move target-role patterns to config.                                                                                                  |
-| `phase2b/phase2c_location_score.py`                | `scoring/location.py`                                                                                                       | Direct port; move geographic preferences to config.                                                                                                |
-| `phase2b/phase2c_workplace_score.py`               | `scoring/workplace.py`                                                                                                      | Direct port; move workplace preferences to config.                                                                                                 |
-| `phase2b/phase2c_composite_score.py`               | `scoring/composite.py`                                                                                                      | New (non-frozen); consumes the six component files + canonical records, joins on `job_id`. Weights/tiers approved (ADR-011).                       |
-| `phase2b/phase2c_ranking.py`                       | `ranking/ranker.py`                                                                                                         | New (non-frozen); orders composite records by descending composite score, ascending `job_id` tie-break (ADR-012).                                  |
-| `phase2b/phase2c_application_decision.py`          | `applications/decision.py`                                                                                                  | New (non-frozen); decides which ranked jobs are proposed as application candidates (proposed shortlist only, gated by approval) (ADR-013).         |
-| `phase2b/input/raw_records.json`                   | `data/raw/`                                                                                                                 | Source data artifact.                                                                                                                              |
-| `phase2b/output/job_records.json`                  | `data/canonical/`                                                                                                           | Canonical job records.                                                                                                                             |
-| `phase2b/output/phase2c_*.json`                    | `data/scored/`                                                                                                              | Component score files.                                                                                                                             |
-| `phase2b/output/stats.json`, `dedup_clusters.json` | `data/` / observability                                                                                                     | Pipeline metadata.                                                                                                                                 |
-| `phase2b/PROJECT_STATE.md`, `phase2b/CLAUDE.md`    | root + phase-scoped docs                                                                                                    | Docs; phase-scoped copy kept for continuity.                                                                                                       |
+| Current file (frozen)                              | Future module(s)                                                                                                            | Notes                                                                                                                                                |
+| -------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `phase2b/pipeline.py`                              | `ingestion/`, `normalization/parsers.py`, `normalization/canonicalize.py`, `normalization/dedup.py`, `eligibility/rules.py` | **Monolith.** Splits naturally into parsers (url/location/workplace/experience/seniority/salary/skills), canonicalization, dedup, and eligibility.   |
+| `phase2b/phase2c_salary_score.py`                  | `scoring/salary.py`                                                                                                         | Direct port; move thresholds to config.                                                                                                              |
+| `phase2b/phase2c_experience_score.py`              | `scoring/experience.py`                                                                                                     | Direct port; move target band to config.                                                                                                             |
+| `phase2b/phase2c_skill_score.py`                   | `scoring/skills.py`                                                                                                         | Direct port; move tier profile + aliases to config.                                                                                                  |
+| `phase2b/phase2c_role_score.py`                    | `scoring/role.py`                                                                                                           | Direct port; move target-role patterns to config.                                                                                                    |
+| `phase2b/phase2c_location_score.py`                | `scoring/location.py`                                                                                                       | Direct port; move geographic preferences to config.                                                                                                  |
+| `phase2b/phase2c_workplace_score.py`               | `scoring/workplace.py`                                                                                                      | Direct port; move workplace preferences to config.                                                                                                   |
+| `phase2b/phase2c_composite_score.py`               | `scoring/composite.py`                                                                                                      | New (non-frozen); consumes the six component files + canonical records, joins on `job_id`. Weights/tiers approved (ADR-011).                         |
+| `phase2b/phase2c_ranking.py`                       | `ranking/ranker.py`                                                                                                         | New (non-frozen); orders composite records by descending composite score, ascending `job_id` tie-break (ADR-012).                                    |
+| `phase2b/phase2c_application_decision.py`          | `applications/decision.py`                                                                                                  | New (non-frozen); decides which ranked jobs are proposed as application candidates (proposed shortlist only, gated by approval) (ADR-013).           |
+| `phase2b/apify_ingestion_adapter.py`               | `ingestion/linkedin.py` (adapter)                                                                                           | New (non-frozen); transforms Apify LinkedIn Jobs Scraper output to pipeline raw format (Phase 7).                                                    |
+| `phase2b/phase4_application_queue.py`              | `applications/queue.py`                                                                                                     | New (non-frozen); prepares application queue from CANDIDATE decisions (Phase 4).                                                                     |
+| `phase2b/run_daily_pipeline.py`                    | `scheduler/jobs.py` + `applications/preparation.py`                                                                         | New (non-frozen); orchestrates the full pipeline end-to-end in isolated run dirs, validates joins, uploads queue to Google Drive (Phase 9, ADR-014). |
+| `phase2b/input/raw_records.json`                   | `data/raw/`                                                                                                                 | Source data artifact.                                                                                                                                |
+| `phase2b/output/job_records.json`                  | `data/canonical/`                                                                                                           | Canonical job records.                                                                                                                               |
+| `phase2b/output/phase2c_*.json`                    | `data/scored/`                                                                                                              | Component score files.                                                                                                                               |
+| `phase2b/output/stats.json`, `dedup_clusters.json` | `data/` / observability                                                                                                     | Pipeline metadata.                                                                                                                                   |
+| `phase2b/PROJECT_STATE.md`, `phase2b/CLAUDE.md`    | root + phase-scoped docs                                                                                                    | Docs; phase-scoped copy kept for continuity.                                                                                                         |
 
 ---
 
@@ -114,9 +124,43 @@ JOB DISCOVERED
 
 Today the prefix through the **application-decision layer** is implemented:
 per-dimension components → composite score → recommendation tier → ranked list →
-per-job application decision (a proposed shortlist). Application **preparation**
-and **submission** (both gated by approval) are not yet built; tracking and
-scheduling are future.
+per-job application decision (a proposed shortlist). **Phase 9 daily orchestration**
+wraps all of this in an end-to-end runner with isolated run directories, fail-safe
+validation, and Google Drive upload of the prepared queue (ADR-014). Application
+**preparation** and **submission** (both gated by approval) are not yet built;
+tracking and scheduling are future.
+
+---
+
+## 4.1 Phase 9 daily orchestration (implemented)
+
+`phase2b/run_daily_pipeline.py` is a thin, non-invasive orchestration layer. It
+imports the frozen modules and **monkeypatches their module-level I/O constants**
+to point at an isolated `/tmp/daily_run_<timestamp>/` directory (input/ + output/),
+then calls each module's `main()`. No frozen file is modified; no production output
+is overwritten; every stage validates record counts and `job_id` joins before
+proceeding. The final stage uploads the prepared application queue to Google Drive
+via the `gdrive-upload` MCP server (localhost:3005) for human review.
+
+**Stages:**
+
+1. Apify ingestion (fresh jobs via `mcp__apify__call-actor`)
+2. Ingestion adapter (`apify_ingestion_adapter.py`)
+3. Phase 2B canonicalization (`pipeline.py`)
+4. Six component scorers (salary, experience, skill, role, location, workplace)
+5. Composite scoring (`phase2c_composite_score.py`)
+6. Ranking (`phase2c_ranking.py`)
+7. Application decision (`phase2c_application_decision.py`)
+8. Application queue prep (`phase4_application_queue.py`)
+9. Google Drive upload
+
+**Safety guarantees:** no frozen file modification, no production output overwrite,
+no application submission (ADR-010), isolated run directories, fail-safe validation
+of record counts and `job_id` joins, run summary JSON with metrics + Drive result.
+
+**NOT implemented:** automatic daily scheduler (cron/systemd), real-time Apify
+Actor call (currently uses latest `test_ingestion_*.json` as stand-in), browser
+automation, LinkedIn application submission.
 
 ---
 

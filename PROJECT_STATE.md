@@ -81,6 +81,9 @@ be merged:
     ├── phase2c_composite_score.py      # Phase 2C Composite scoring (IMPLEMENTED)
     ├── phase2c_ranking.py              # Phase 2C Ranking (IMPLEMENTED)
     ├── phase2c_application_decision.py # Phase 2C Application Decision (IMPLEMENTED)
+    ├── apify_ingestion_adapter.py      # Phase 7 — Apify → pipeline raw format (IMPLEMENTED)
+    ├── phase4_application_queue.py     # Phase 4 — Application queue prep (IMPLEMENTED)
+    ├── run_daily_pipeline.py           # Phase 9 — Daily orchestration (IMPLEMENTED)
     ├── input/
     │   └── raw_records.json            # Phase 2B raw input (Apify LinkedIn records)
     └── output/
@@ -120,14 +123,31 @@ scaffolding exists there yet. The `src/job_pipeline/` target layout in
 | **2C — Ranking**              | COMPLETE (desc composite score, asc job_id tie-break)           | `phase2c_ranking.py`              | `output/phase2c_rankings.json`                        |
 | **2C — Application Decision** | COMPLETE (inclusive: CANDIDATE = ELIGIBLE + RECOMMEND/CONSIDER) | `phase2c_application_decision.py` | `output/phase2c_application_decisions.json`           |
 
+| **9 — Daily Orchestration** | COMPLETE / IMPLEMENTED | `phase2b/run_daily_pipeline.py` | Isolated run dir + `run_summary.json` + Google Drive upload |
+| **2C — Location Scoring** | COMPLETE / IMPLEMENTED | `phase2c_location_score.py` | `output/phase2c_location_scores.json` |
+| **2C — Workplace Scoring** | COMPLETE / IMPLEMENTED | `phase2c_workplace_score.py` | `output/phase2c_workplace_scores.json` |
+| **2C — Composite Scoring** | COMPLETE (weights 1.00, tiers approved) | `phase2c_composite_score.py` | `output/phase2c_composite_scores.json` |
+| **2C — Ranking** | COMPLETE (desc composite score, asc job*id tie-break) | `phase2c_ranking.py` | `output/phase2c_rankings.json` |
+| **2C — Application Decision** | COMPLETE (inclusive: CANDIDATE = ELIGIBLE + RECOMMEND/CONSIDER) | `phase2c_application_decision.py` | `output/phase2c_application_decisions.json` |
+| **7 — Apify Ingestion Adapter** | COMPLETE / IMPLEMENTED | `apify_ingestion_adapter.py` | `output/test_ingestion*\*.json`                       |
+| **4 — Application Queue Prep**  | COMPLETE / IMPLEMENTED                                      |`phase4_application_queue.py`     |`phase4_application_queue.json`in run dir           |
+| **9 — Daily Orchestration**     | COMPLETE / IMPLEMENTED                                      |`run_daily_pipeline.py`           | Isolated run dir +`run_summary.json` + Drive upload |
+
 **Next planned (NOT yet implemented):** Phase 3 — application preparation/submission/tracking, gated
 by explicit approval (ADR-010). The application-decision layer emits a **proposed
 shortlist only** — nothing is submitted.
 
+**Phase 9 — Daily Orchestration (IMPLEMENTED):** Production-safe daily orchestration
+script `phase2b/run_daily_pipeline.py` runs the complete frozen pipeline end-to-end:
+Apify → ingestion adapter → Phase 2B canonicalization → 6 component scorers →
+composite → ranking → application decision → Phase 4 queue → Google Drive upload.
+No frozen file modification, no application automation, isolated run directories,
+fail-safe validation of record counts and job_id joins.
+
 **Architecture documentation (COMPLETE, docs only — no runtime code changed):**
 `docs/architecture.md`, `docs/decisions.md`, `docs/scoring.md`, root `README.md`,
 root `CLAUDE.md`. These record the target architecture, the current→future file
-mapping, technical debt, and approved (ADR-001…013) vs proposed (ADR-010) decisions. See `docs/architecture.md` §10 for technical debt.
+mapping, technical debt, and approved (ADR-001…014) vs proposed (ADR-010) decisions. See `docs/architecture.md` §10 for technical debt.
 
 ---
 
