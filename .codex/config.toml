@@ -1,0 +1,5 @@
+[mcp_servers.apify]
+url = "https://mcp.apify.com"
+
+[mcp_servers.gdrive-upload]
+url = "http://localhost:3000/mcp"

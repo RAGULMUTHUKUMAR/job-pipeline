@@ -1,0 +1,632 @@
+[
+  {
+    "job_id": "c0a29e9e-c187-58cf-9d99-fb73159a7a4c",
+    "canonical_url": "https://in.linkedin.com/jobs/view/engineer-innovation-at-talentien-4449153194",
+    "company_name": "Talentien",
+    "job_title": "Engineer - Innovation",
+    "rank": 1,
+    "state": "RECOMMENDED",
+    "state_version": 1,
+    "state_history": [
+      {
+        "state": "RECOMMENDED",
+        "timestamp": "2026-08-24T16:04:34Z",
+        "source": "phase3_foundation_init",
+        "details": {
+          "application_decision": "CANDIDATE",
+          "selection_status": "REVIEW"
+        }
+      }
+    ],
+    "phase10_queue": {
+      "application_status": "PENDING",
+      "application_attempted": false,
+      "application_submitted": false
+    },
+    "phase11b_selection": {
+      "selected_resume_id": "1B2n_hRUwhbWX54WqkJCH2a_pRhesokMXZtTzGtTFZgQ",
+      "selected_resume": "Ragul_IBM_CloudFullStack_Resume",
+      "selection_status": "REVIEW",
+      "selection_reason": "Best match score 0.48: skills:1/5 role:0.33 exp:excellent domain:cloud_fullstack"
+    },
+    "approval_record": {
+      "present": false,
+      "approved_at": null,
+      "approved_by": null,
+      "approval_method": null,
+      "approval_version": 0,
+      "notes": null
+    },
+    "duplicate_of": null,
+    "created_at": "2026-08-24T16:04:34Z",
+    "updated_at": "2026-08-24T16:04:34Z"
+  },
+  {
+    "job_id": "22d83c9b-d4d9-56a1-8448-66784ba2a0da",
+    "canonical_url": "https://in.linkedin.com/jobs/view/custom-software-engineer-at-accenture-in-india-4448388186",
+    "company_name": "Accenture in India",
+    "job_title": "Custom Software Engineer",
+    "rank": 2,
+    "state": "RECOMMENDED",
+    "state_version": 1,
+    "state_history": [
+      {
+        "state": "RECOMMENDED",
+        "timestamp": "2026-08-24T16:04:34Z",
+        "source": "phase3_foundation_init",
+        "details": {
+          "application_decision": "CANDIDATE",
+          "selection_status": "SELECTED"
+        }
+      }
+    ],
+    "phase10_queue": {
+      "application_status": "PENDING",
+      "application_attempted": false,
+      "application_submitted": false
+    },
+    "phase11b_selection": {
+      "selected_resume_id": "1lM8BNZhF0zEzdFl0TwS7qy4adUoTPWONCd96tmUGrjA",
+      "selected_resume": "Ragul_Cisco_Isovalent_Resume",
+      "selection_status": "SELECTED",
+      "selection_reason": "Best match score 0.60: skills:0/1 role:1.00 exp:excellent domain:fullstack"
+    },
+    "approval_record": {
+      "present": false,
+      "approved_at": null,
+      "approved_by": null,
+      "approval_method": null,
+      "approval_version": 0,
+      "notes": null
+    },
+    "duplicate_of": null,
+    "created_at": "2026-08-24T16:04:34Z",
+    "updated_at": "2026-08-24T16:04:34Z"
+  },
+  {
+    "job_id": "a89e18e4-0f1f-5ba7-91f1-9714ffd93b6c",
+    "canonical_url": "https://in.linkedin.com/jobs/view/custom-software-engineer-at-accenture-in-india-4448372719",
+    "company_name": "Accenture in India",
+    "job_title": "Custom Software Engineer",
+    "rank": 3,
+    "state": "RECOMMENDED",
+    "state_version": 1,
+    "state_history": [
+      {
+        "state": "RECOMMENDED",
+        "timestamp": "2026-08-24T16:04:34Z",
+        "source": "phase3_foundation_init",
+        "details": {
+          "application_decision": "CANDIDATE",
+          "selection_status": "SELECTED"
+        }
+      }
+    ],
+    "phase10_queue": {
+      "application_status": "PENDING",
+      "application_attempted": false,
+      "application_submitted": false
+    },
+    "phase11b_selection": {
+      "selected_resume_id": "1lM8BNZhF0zEzdFl0TwS7qy4adUoTPWONCd96tmUGrjA",
+      "selected_resume": "Ragul_Cisco_Isovalent_Resume",
+      "selection_status": "SELECTED",
+      "selection_reason": "Best match score 0.60: skills:0/2 role:1.00 exp:excellent domain:fullstack"
+    },
+    "approval_record": {
+      "present": false,
+      "approved_at": null,
+      "approved_by": null,
+      "approval_method": null,
+      "approval_version": 0,
+      "notes": null
+    },
+    "duplicate_of": null,
+    "created_at": "2026-08-24T16:04:34Z",
+    "updated_at": "2026-08-24T16:04:34Z"
+  },
+  {
+    "job_id": "b5c325c5-3c0f-5eee-b667-5094eaf6d942",
+    "canonical_url": "https://in.linkedin.com/jobs/view/custom-software-engineer-at-accenture-in-india-4448387642",
+    "company_name": "Accenture in India",
+    "job_title": "Custom Software Engineer",
+    "rank": 4,
+    "state": "RECOMMENDED",
+    "state_version": 1,
+    "state_history": [
+      {
+        "state": "RECOMMENDED",
+        "timestamp": "2026-08-24T16:04:34Z",
+        "source": "phase3_foundation_init",
+        "details": {
+          "application_decision": "CANDIDATE",
+          "selection_status": "SELECTED"
+        }
+      }
+    ],
+    "phase10_queue": {
+      "application_status": "PENDING",
+      "application_attempted": false,
+      "application_submitted": false
+    },
+    "phase11b_selection": {
+      "selected_resume_id": "1lM8BNZhF0zEzdFl0TwS7qy4adUoTPWONCd96tmUGrjA",
+      "selected_resume": "Ragul_Cisco_Isovalent_Resume",
+      "selection_status": "SELECTED",
+      "selection_reason": "Best match score 0.60: skills:0/2 role:1.00 exp:excellent domain:fullstack"
+    },
+    "approval_record": {
+      "present": false,
+      "approved_at": null,
+      "approved_by": null,
+      "approval_method": null,
+      "approval_version": 0,
+      "notes": null
+    },
+    "duplicate_of": null,
+    "created_at": "2026-08-24T16:04:34Z",
+    "updated_at": "2026-08-24T16:04:34Z"
+  },
+  {
+    "job_id": "f014d236-617f-57fa-aea8-99a005bfd674",
+    "canonical_url": "https://in.linkedin.com/jobs/view/custom-software-engineer-at-accenture-in-india-4448342711",
+    "company_name": "Accenture in India",
+    "job_title": "Custom Software Engineer",
+    "rank": 5,
+    "state": "RECOMMENDED",
+    "state_version": 1,
+    "state_history": [
+      {
+        "state": "RECOMMENDED",
+        "timestamp": "2026-08-24T16:04:34Z",
+        "source": "phase3_foundation_init",
+        "details": {
+          "application_decision": "CANDIDATE",
+          "selection_status": "SELECTED"
+        }
+      }
+    ],
+    "phase10_queue": {
+      "application_status": "PENDING",
+      "application_attempted": false,
+      "application_submitted": false
+    },
+    "phase11b_selection": {
+      "selected_resume_id": "1lM8BNZhF0zEzdFl0TwS7qy4adUoTPWONCd96tmUGrjA",
+      "selected_resume": "Ragul_Cisco_Isovalent_Resume",
+      "selection_status": "SELECTED",
+      "selection_reason": "Best match score 0.60: skills:0/1 role:1.00 exp:excellent domain:fullstack"
+    },
+    "approval_record": {
+      "present": false,
+      "approved_at": null,
+      "approved_by": null,
+      "approval_method": null,
+      "approval_version": 0,
+      "notes": null
+    },
+    "duplicate_of": null,
+    "created_at": "2026-08-24T16:04:34Z",
+    "updated_at": "2026-08-24T16:04:34Z"
+  },
+  {
+    "job_id": "6850da9b-07dc-5a79-986c-b12b2df70562",
+    "canonical_url": "https://in.linkedin.com/jobs/view/full-stack-engineer-at-accenture-in-india-4448339314",
+    "company_name": "Accenture in India",
+    "job_title": "Full Stack Engineer",
+    "rank": 6,
+    "state": "RECOMMENDED",
+    "state_version": 1,
+    "state_history": [
+      {
+        "state": "RECOMMENDED",
+        "timestamp": "2026-08-24T16:04:34Z",
+        "source": "phase3_foundation_init",
+        "details": {
+          "application_decision": "CANDIDATE",
+          "selection_status": "REVIEW"
+        }
+      }
+    ],
+    "phase10_queue": {
+      "application_status": "PENDING",
+      "application_attempted": false,
+      "application_submitted": false
+    },
+    "phase11b_selection": {
+      "selected_resume_id": "1B2n_hRUwhbWX54WqkJCH2a_pRhesokMXZtTzGtTFZgQ",
+      "selected_resume": "Ragul_IBM_CloudFullStack_Resume",
+      "selection_status": "REVIEW",
+      "selection_reason": "Best match score 0.60: skills:0/1 role:1.00 exp:excellent domain:cloud_fullstack"
+    },
+    "approval_record": {
+      "present": false,
+      "approved_at": null,
+      "approved_by": null,
+      "approval_method": null,
+      "approval_version": 0,
+      "notes": null
+    },
+    "duplicate_of": null,
+    "created_at": "2026-08-24T16:04:34Z",
+    "updated_at": "2026-08-24T16:04:34Z"
+  },
+  {
+    "job_id": "cd05dfda-792c-5863-bcee-d082a06d3c35",
+    "canonical_url": "https://in.linkedin.com/jobs/view/full-stack-engineer-at-accenture-in-india-4448329746",
+    "company_name": "Accenture in India",
+    "job_title": "Full Stack Engineer",
+    "rank": 7,
+    "state": "RECOMMENDED",
+    "state_version": 1,
+    "state_history": [
+      {
+        "state": "RECOMMENDED",
+        "timestamp": "2026-08-24T16:04:34Z",
+        "source": "phase3_foundation_init",
+        "details": {
+          "application_decision": "CANDIDATE",
+          "selection_status": "REVIEW"
+        }
+      }
+    ],
+    "phase10_queue": {
+      "application_status": "PENDING",
+      "application_attempted": false,
+      "application_submitted": false
+    },
+    "phase11b_selection": {
+      "selected_resume_id": "1B2n_hRUwhbWX54WqkJCH2a_pRhesokMXZtTzGtTFZgQ",
+      "selected_resume": "Ragul_IBM_CloudFullStack_Resume",
+      "selection_status": "REVIEW",
+      "selection_reason": "Best match score 0.60: skills:0/1 role:1.00 exp:excellent domain:cloud_fullstack"
+    },
+    "approval_record": {
+      "present": false,
+      "approved_at": null,
+      "approved_by": null,
+      "approval_method": null,
+      "approval_version": 0,
+      "notes": null
+    },
+    "duplicate_of": null,
+    "created_at": "2026-08-24T16:04:34Z",
+    "updated_at": "2026-08-24T16:04:34Z"
+  },
+  {
+    "job_id": "4713d515-87fd-5d8a-a9a5-c02afabd9049",
+    "canonical_url": "https://in.linkedin.com/jobs/view/custom-software-engineer-at-accenture-in-india-4448828883",
+    "company_name": "Accenture in India",
+    "job_title": "Custom Software Engineer",
+    "rank": 8,
+    "state": "RECOMMENDED",
+    "state_version": 1,
+    "state_history": [
+      {
+        "state": "RECOMMENDED",
+        "timestamp": "2026-08-24T16:04:34Z",
+        "source": "phase3_foundation_init",
+        "details": {
+          "application_decision": "CANDIDATE",
+          "selection_status": "SELECTED"
+        }
+      }
+    ],
+    "phase10_queue": {
+      "application_status": "PENDING",
+      "application_attempted": false,
+      "application_submitted": false
+    },
+    "phase11b_selection": {
+      "selected_resume_id": "1lM8BNZhF0zEzdFl0TwS7qy4adUoTPWONCd96tmUGrjA",
+      "selected_resume": "Ragul_Cisco_Isovalent_Resume",
+      "selection_status": "SELECTED",
+      "selection_reason": "Best match score 0.60: skills:0/2 role:1.00 exp:excellent domain:fullstack"
+    },
+    "approval_record": {
+      "present": false,
+      "approved_at": null,
+      "approved_by": null,
+      "approval_method": null,
+      "approval_version": 0,
+      "notes": null
+    },
+    "duplicate_of": null,
+    "created_at": "2026-08-24T16:04:34Z",
+    "updated_at": "2026-08-24T16:04:34Z"
+  },
+  {
+    "job_id": "4a3433d4-fd5e-5ccd-acf4-360174adb999",
+    "canonical_url": "https://in.linkedin.com/jobs/view/custom-software-engineer-at-accenture-in-india-4448355943",
+    "company_name": "Accenture in India",
+    "job_title": "Custom Software Engineer",
+    "rank": 9,
+    "state": "RECOMMENDED",
+    "state_version": 1,
+    "state_history": [
+      {
+        "state": "RECOMMENDED",
+        "timestamp": "2026-08-24T16:04:34Z",
+        "source": "phase3_foundation_init",
+        "details": {
+          "application_decision": "CANDIDATE",
+          "selection_status": "SELECTED"
+        }
+      }
+    ],
+    "phase10_queue": {
+      "application_status": "PENDING",
+      "application_attempted": false,
+      "application_submitted": false
+    },
+    "phase11b_selection": {
+      "selected_resume_id": "1lM8BNZhF0zEzdFl0TwS7qy4adUoTPWONCd96tmUGrjA",
+      "selected_resume": "Ragul_Cisco_Isovalent_Resume",
+      "selection_status": "SELECTED",
+      "selection_reason": "Best match score 0.60: skills:0/2 role:1.00 exp:excellent domain:fullstack"
+    },
+    "approval_record": {
+      "present": false,
+      "approved_at": null,
+      "approved_by": null,
+      "approval_method": null,
+      "approval_version": 0,
+      "notes": null
+    },
+    "duplicate_of": null,
+    "created_at": "2026-08-24T16:04:34Z",
+    "updated_at": "2026-08-24T16:04:34Z"
+  },
+  {
+    "job_id": "8e53efae-bbd4-5bb9-b241-92880534938f",
+    "canonical_url": "https://in.linkedin.com/jobs/view/software-development-engineer-at-accenture-in-india-4448354451",
+    "company_name": "Accenture in India",
+    "job_title": "Software Development Engineer",
+    "rank": 10,
+    "state": "RECOMMENDED",
+    "state_version": 1,
+    "state_history": [
+      {
+        "state": "RECOMMENDED",
+        "timestamp": "2026-08-24T16:04:34Z",
+        "source": "phase3_foundation_init",
+        "details": {
+          "application_decision": "CANDIDATE",
+          "selection_status": "REVIEW"
+        }
+      }
+    ],
+    "phase10_queue": {
+      "application_status": "PENDING",
+      "application_attempted": false,
+      "application_submitted": false
+    },
+    "phase11b_selection": {
+      "selected_resume_id": "1lM8BNZhF0zEzdFl0TwS7qy4adUoTPWONCd96tmUGrjA",
+      "selected_resume": "Ragul_Cisco_Isovalent_Resume",
+      "selection_status": "REVIEW",
+      "selection_reason": "Best match score 0.50: skills:0/1 role:0.67 exp:excellent domain:fullstack"
+    },
+    "approval_record": {
+      "present": false,
+      "approved_at": null,
+      "approved_by": null,
+      "approval_method": null,
+      "approval_version": 0,
+      "notes": null
+    },
+    "duplicate_of": null,
+    "created_at": "2026-08-24T16:04:34Z",
+    "updated_at": "2026-08-24T16:04:34Z"
+  },
+  {
+    "job_id": "afa6f7f5-912b-5203-b108-a982111c8010",
+    "canonical_url": "https://in.linkedin.com/jobs/view/custom-software-engineer-at-accenture-in-india-4448362638",
+    "company_name": "Accenture in India",
+    "job_title": "Custom Software Engineer",
+    "rank": 11,
+    "state": "RECOMMENDED",
+    "state_version": 1,
+    "state_history": [
+      {
+        "state": "RECOMMENDED",
+        "timestamp": "2026-08-24T16:04:34Z",
+        "source": "phase3_foundation_init",
+        "details": {
+          "application_decision": "CANDIDATE",
+          "selection_status": "SELECTED"
+        }
+      }
+    ],
+    "phase10_queue": {
+      "application_status": "PENDING",
+      "application_attempted": false,
+      "application_submitted": false
+    },
+    "phase11b_selection": {
+      "selected_resume_id": "1lM8BNZhF0zEzdFl0TwS7qy4adUoTPWONCd96tmUGrjA",
+      "selected_resume": "Ragul_Cisco_Isovalent_Resume",
+      "selection_status": "SELECTED",
+      "selection_reason": "Best match score 0.60: skills:0/1 role:1.00 exp:excellent domain:fullstack"
+    },
+    "approval_record": {
+      "present": false,
+      "approved_at": null,
+      "approved_by": null,
+      "approval_method": null,
+      "approval_version": 0,
+      "notes": null
+    },
+    "duplicate_of": null,
+    "created_at": "2026-08-24T16:04:34Z",
+    "updated_at": "2026-08-24T16:04:34Z"
+  },
+  {
+    "job_id": "fdae4914-e761-5ca7-8983-67f5008dd3f0",
+    "canonical_url": "https://in.linkedin.com/jobs/view/custom-software-engineer-at-accenture-in-india-4448894213",
+    "company_name": "Accenture in India",
+    "job_title": "Custom Software Engineer",
+    "rank": 12,
+    "state": "RECOMMENDED",
+    "state_version": 1,
+    "state_history": [
+      {
+        "state": "RECOMMENDED",
+        "timestamp": "2026-08-24T16:04:34Z",
+        "source": "phase3_foundation_init",
+        "details": {
+          "application_decision": "CANDIDATE",
+          "selection_status": "SELECTED"
+        }
+      }
+    ],
+    "phase10_queue": {
+      "application_status": "PENDING",
+      "application_attempted": false,
+      "application_submitted": false
+    },
+    "phase11b_selection": {
+      "selected_resume_id": "1lM8BNZhF0zEzdFl0TwS7qy4adUoTPWONCd96tmUGrjA",
+      "selected_resume": "Ragul_Cisco_Isovalent_Resume",
+      "selection_status": "SELECTED",
+      "selection_reason": "Best match score 0.60: skills:0/2 role:1.00 exp:excellent domain:fullstack"
+    },
+    "approval_record": {
+      "present": false,
+      "approved_at": null,
+      "approved_by": null,
+      "approval_method": null,
+      "approval_version": 0,
+      "notes": null
+    },
+    "duplicate_of": null,
+    "created_at": "2026-08-24T16:04:34Z",
+    "updated_at": "2026-08-24T16:04:34Z"
+  },
+  {
+    "job_id": "8f4ad6cf-0435-54ce-858b-a6d203402534",
+    "canonical_url": "https://in.linkedin.com/jobs/view/application-developer-at-accenture-in-india-4448333232",
+    "company_name": "Accenture in India",
+    "job_title": "Application Developer",
+    "rank": 13,
+    "state": "RECOMMENDED",
+    "state_version": 1,
+    "state_history": [
+      {
+        "state": "RECOMMENDED",
+        "timestamp": "2026-08-24T16:04:34Z",
+        "source": "phase3_foundation_init",
+        "details": {
+          "application_decision": "CANDIDATE",
+          "selection_status": "SELECTED"
+        }
+      }
+    ],
+    "phase10_queue": {
+      "application_status": "PENDING",
+      "application_attempted": false,
+      "application_submitted": false
+    },
+    "phase11b_selection": {
+      "selected_resume_id": "1B2n_hRUwhbWX54WqkJCH2a_pRhesokMXZtTzGtTFZgQ",
+      "selected_resume": "Ragul_IBM_CloudFullStack_Resume",
+      "selection_status": "SELECTED",
+      "selection_reason": "Best match score 0.60: skills:0/5 role:1.00 exp:excellent domain:cloud_fullstack"
+    },
+    "approval_record": {
+      "present": false,
+      "approved_at": null,
+      "approved_by": null,
+      "approval_method": null,
+      "approval_version": 0,
+      "notes": null
+    },
+    "duplicate_of": null,
+    "created_at": "2026-08-24T16:04:34Z",
+    "updated_at": "2026-08-24T16:04:34Z"
+  },
+  {
+    "job_id": "ebde4338-7052-522b-bdce-8d5af9ed80e2",
+    "canonical_url": "https://in.linkedin.com/jobs/view/web-developer-at-accenture-in-india-4448356209",
+    "company_name": "Accenture in India",
+    "job_title": "Web Developer",
+    "rank": 14,
+    "state": "RECOMMENDED",
+    "state_version": 1,
+    "state_history": [
+      {
+        "state": "RECOMMENDED",
+        "timestamp": "2026-08-24T16:04:34Z",
+        "source": "phase3_foundation_init",
+        "details": {
+          "application_decision": "CANDIDATE",
+          "selection_status": "REVIEW"
+        }
+      }
+    ],
+    "phase10_queue": {
+      "application_status": "PENDING",
+      "application_attempted": false,
+      "application_submitted": false
+    },
+    "phase11b_selection": {
+      "selected_resume_id": "1B2n_hRUwhbWX54WqkJCH2a_pRhesokMXZtTzGtTFZgQ",
+      "selected_resume": "Ragul_IBM_CloudFullStack_Resume",
+      "selection_status": "REVIEW",
+      "selection_reason": "Best match score 0.45: skills:0/1 role:0.50 exp:excellent domain:cloud_fullstack"
+    },
+    "approval_record": {
+      "present": false,
+      "approved_at": null,
+      "approved_by": null,
+      "approval_method": null,
+      "approval_version": 0,
+      "notes": null
+    },
+    "duplicate_of": null,
+    "created_at": "2026-08-24T16:04:34Z",
+    "updated_at": "2026-08-24T16:04:34Z"
+  },
+  {
+    "job_id": "a1a1f6b2-ca0d-50b1-aeae-aef1435d5e64",
+    "canonical_url": "https://in.linkedin.com/jobs/view/custom-software-engineer-at-accenture-in-india-4448351956",
+    "company_name": "Accenture in India",
+    "job_title": "Custom Software Engineer",
+    "rank": 15,
+    "state": "RECOMMENDED",
+    "state_version": 1,
+    "state_history": [
+      {
+        "state": "RECOMMENDED",
+        "timestamp": "2026-08-24T16:04:34Z",
+        "source": "phase3_foundation_init",
+        "details": {
+          "application_decision": "CANDIDATE",
+          "selection_status": "SELECTED"
+        }
+      }
+    ],
+    "phase10_queue": {
+      "application_status": "PENDING",
+      "application_attempted": false,
+      "application_submitted": false
+    },
+    "phase11b_selection": {
+      "selected_resume_id": "1lM8BNZhF0zEzdFl0TwS7qy4adUoTPWONCd96tmUGrjA",
+      "selected_resume": "Ragul_Cisco_Isovalent_Resume",
+      "selection_status": "SELECTED",
+      "selection_reason": "Best match score 0.60: skills:0/1 role:1.00 exp:excellent domain:fullstack"
+    },
+    "approval_record": {
+      "present": false,
+      "approved_at": null,
+      "approved_by": null,
+      "approval_method": null,
+      "approval_version": 0,
+      "notes": null
+    },
+    "duplicate_of": null,
+    "created_at": "2026-08-24T16:04:34Z",
+    "updated_at": "2026-08-24T16:04:34Z"
+  }
+]
